@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment variables (contains API keys)
+.env
+.env.*
+
+# Generated cache (auto-regenerated on demand)
+cache/
+
+# Personal data (conversation history, private)
+data/
+
+# macOS system files
+.DS_Store
+**/.DS_Store
+
+# Claude Code local settings
+.claude/
