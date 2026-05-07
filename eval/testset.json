@@ -1,0 +1,89 @@
+[
+  {
+    "query": "Andrew pickering提到的agency概念对当前的ai agent设计有什么意义",
+    "expected_sources": [
+      "泛学习/AI与设计相关议题探讨 — Agency与非现代本体论.md",
+      "泛学习/the cybernetic brain.md",
+      "泛学习/AI与设计相关探讨 — 行为作者与设计史.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "提到利用ai的'中间过程产物'的设计师是谁？他做了什么实验",
+    "expected_sources": [
+      "泛学习/AI与设计相关探讨 — 行为作者与设计史.md",
+      "泛学习/AI与设计相关议题探讨 — Agency与非现代本体论.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "我最近的一个产品想法是什么",
+    "expected_sources": [
+      "LAB/2026-05-07-1832-我一直想做一个适合冷启动的ai工具。因为现在的很.md",
+      "AI对话记忆/2026-05-06-是的，我认为现在只有做出一个end to.md",
+      "AI对话记忆/2026-05-07-针对我的这个想法，你觉得应该如何实现？既.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "我最近在焦虑什么",
+    "expected_sources": [
+      "DailyNotes/2026-04-28.md",
+      "DailyNotes/2026-04-24.md",
+      "DailyNotes/Weekly 2026-04-20.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "我的毕业论文进行到什么程度了",
+    "expected_sources": [
+      "毕业论文/正文.md",
+      "毕业论文/三个场景设计.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "Gordon Pask的例子被哪些人提起过，在什么语境下提起的？",
+    "expected_sources": [
+      "泛学习/AI与设计相关议题探讨 — Agency与非现代本体论.md",
+      "泛学习/AI与设计相关探讨 — 行为作者与设计史.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "Gray Croft的演讲对我的产品想法有什么启示",
+    "expected_sources": [
+      "泛学习/AI与设计相关探讨 — 行为作者与设计史.md",
+      "AI对话记忆/2026-05-06-是的，我认为现在只有做出一个end to.md",
+      "LAB/2026-05-07-1832-我一直想做一个适合冷启动的ai工具。因为现在的很.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "以agent为材料什么意思",
+    "expected_sources": [
+      "泛学习/AI与设计相关议题探讨 — Agency与非现代本体论.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "human in the loop的设计核心是什么",
+    "expected_sources": [
+      "泛学习/AI与设计相关探讨 — 行为作者与设计史.md",
+      "泛学习/agent答疑.md",
+      "泛学习/AI与设计相关议题探讨 — Agency与非现代本体论.md"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "我个人对ai行业的洞察有什么",
+    "expected_sources": [
+      "DailyNotes/2026-04-19.md",
+      "DailyNotes/2026-04-17.md",
+      "DailyNotes/2026-04-12.md",
+      "DailyNotes/2026-04-13.md",
+      "DailyNotes/2026-04-14.md"
+    ],
+    "top_k": 5
+  }
+]

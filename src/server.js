@@ -7,7 +7,7 @@ const { indexAll }                         = require('./indexer');
 const { startWatcher }                     = require('./watcher');
 const { createIdea, listReminders, updateReminder, appendDiscussion } = require('./lab');
 const { getReview }                        = require('./reviewer');
-const { save: saveConv, list: listConvs, get: getConv } = require('./conversations');
+const { save: saveConv, list: listConvs, get: getConv, remove: removeConv } = require('./conversations');
 require('dotenv').config();
 
 const app = express();
@@ -118,6 +118,16 @@ app.get('/api/conversations', (req, res) => {
     res.json(listConvs());
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// 删除对话
+app.delete('/api/conversations/:id', (req, res) => {
+  try {
+    removeConv(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
   }
 });
 

@@ -68,4 +68,10 @@ function get(id) {
   try { return JSON.parse(fs.readFileSync(filepath, 'utf-8')); } catch { return null; }
 }
 
-module.exports = { save, list, get };
+function remove(id) {
+  const filepath = path.join(DATA_DIR, `${id}.json`);
+  if (!fs.existsSync(filepath)) throw Object.assign(new Error('对话不存在'), { status: 404 });
+  fs.unlinkSync(filepath);
+}
+
+module.exports = { save, list, get, remove };

@@ -720,6 +720,24 @@
   .remind-confirm { font-size: 13px; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
   .remind-confirm svg { color: var(--primary); }
 
+  /* ---------- History delete button ---------- */
+  .history-item { position: relative; }
+  .history-del {
+    flex-shrink: 0;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-3);
+    background: transparent;
+    transition: background 0.15s ease, color 0.15s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .history-item:hover .history-del,
+  .history-item:focus-within .history-del { opacity: 1; pointer-events: auto; }
+  .history-del:hover { background: #fde8e8; color: #c0392b; }
+  .history-del.confirming { opacity: 1; pointer-events: auto; background: #c0392b; color: #fff; border-radius: 999px; width: auto; padding: 0 10px; font-size: 12px; font-weight: 500; }
+
   /* ---------- Task action buttons ---------- */
   .task-actions {
     display: flex;
@@ -978,18 +996,56 @@ async function renderHistory() {
     historyList.innerHTML = `<li style="padding:14px 4px;font-size:13px;color:var(--text-3);text-align:center;">还没有对话记录</li>`;
     return;
   }
+  const ICON_TRASH = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+
   historyList.innerHTML = convs.map(c => `
-    <li class="history-item" data-id="${escapeHtml(c.id)}">
-      <div class="h-title">${escapeHtml(c.title)}</div>
-      <div class="h-meta">
-        <span>${escapeHtml(formatRelativeTime(c.updatedAt))}</span>
-        ${c.preview ? `<span class="sep"></span><span>${escapeHtml(c.preview)}</span>` : ''}
+    <li class="history-item" data-id="${escapeHtml(c.id)}" style="display:flex;align-items:center;gap:8px;">
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
+        <div class="h-title">${escapeHtml(c.title)}</div>
+        <div class="h-meta">
+          <span>${escapeHtml(formatRelativeTime(c.updatedAt))}</span>
+          ${c.preview ? `<span class="sep"></span><span>${escapeHtml(c.preview)}</span>` : ''}
+        </div>
       </div>
+      <button class="history-del" data-id="${escapeHtml(c.id)}" aria-label="删除对话">${ICON_TRASH}</button>
     </li>
   `).join('');
 
   historyList.querySelectorAll('.history-item').forEach(el => {
-    el.addEventListener('click', () => openConversation({ id: el.getAttribute('data-id') }));
+    el.addEventListener('click', e => {
+      if (e.target.closest('.history-del')) return;
+      openConversation({ id: el.getAttribute('data-id') });
+    });
+  });
+
+  const confirmTimers = {};
+  historyList.querySelectorAll('.history-del').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      if (!btn.classList.contains('confirming')) {
+        btn.classList.add('confirming');
+        btn.textContent = '确认删除';
+        confirmTimers[id] = setTimeout(() => {
+          btn.classList.remove('confirming');
+          btn.innerHTML = ICON_TRASH;
+        }, 2000);
+      } else {
+        clearTimeout(confirmTimers[id]);
+        btn.textContent = '…';
+        btn.disabled = true;
+        try {
+          await fetch(`${API_BASE}/api/conversations/${encodeURIComponent(id)}`, { method: 'DELETE' });
+          showToast('已删除');
+          renderHistory();
+        } catch {
+          showToast('删除失败');
+          btn.classList.remove('confirming');
+          btn.innerHTML = ICON_TRASH;
+          btn.disabled = false;
+        }
+      }
+    });
   });
 }
 
