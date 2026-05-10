@@ -70,11 +70,11 @@ function getRecentFiles(days = 7) {
 
 async function generateSummary(files) {
   if (files.length === 0) {
-    return '本周暂无新增或修改的笔记。';
+    return { summary: '本周暂无新增或修改的笔记。', tags: [] };
   }
 
   const context = files
-    .slice(0, 20) // cap at 20 to stay within token budget
+    .slice(0, 20)
     .map(f => `【${f.name}】\n${f.body}`)
     .join('\n\n---\n\n');
 
@@ -83,17 +83,27 @@ async function generateSummary(files) {
     messages: [
       {
         role: 'system',
-        content: '你是用户的个人知识助手，负责生成本周笔记回顾摘要。直接输出摘要，不要加任何前缀或解释。',
+        content: '你是用户的个人知识助手，负责生成本周笔记回顾摘要。只输出 JSON，不加任何额外文字。',
       },
       {
         role: 'user',
-        content: `以下是本周新增或修改的 ${files.length} 条笔记片段：\n\n${context}\n\n请生成一句简洁的回顾摘要，严格遵循此格式：\n本周新增 X 条笔记，主要围绕**A**、**B**、**C**。有 Y 个主题值得深入讨论。\n\nX 是实际数量，A/B/C 是提炼的 2-3 个核心主题（加粗），Y 是值得继续探讨的主题数。控制在 50 字以内。`,
+        content: `以下是本周新增或修改的 ${files.length} 条笔记片段：\n\n${context}\n\n请返回如下 JSON（不要加代码块标记）：\n{"summary":"本周新增 X 条笔记，主要围绕**A**、**B**、**C**。","tags":["话题1","话题2","话题3"],"question":"一个值得长时间思考的开放性问题？"}\n\n规则：summary 中 X 是实际数量，A/B/C 是 2-3 个核心主题（加粗），控制在 40 字以内；tags 是 3-6 个值得深入探讨的关键词，每个不超过 8 字；question 是从笔记中提炼的一个最值得深度思考的开放性问题，一句话，20 字以内，以问号结尾。`,
       },
     ],
-    max_tokens: 120,
+    max_tokens: 200,
   });
 
-  return completion.choices[0].message.content.trim();
+  try {
+    const raw = completion.choices[0].message.content.trim().replace(/^```json?\n?|```$/g, '');
+    const parsed = JSON.parse(raw);
+    return {
+      summary:  parsed.summary  || '',
+      tags:     Array.isArray(parsed.tags) ? parsed.tags : [],
+      question: parsed.question || '',
+    };
+  } catch {
+    return { summary: completion.choices[0].message.content.trim(), tags: [], question: '' };
+  }
 }
 
 async function getReview() {
@@ -107,9 +117,9 @@ async function getReview() {
     }
   }
 
-  const files   = getRecentFiles(7);
-  const content = await generateSummary(files);
-  const result  = { content, fileCount, recentCount: files.length, generatedAt: new Date().toISOString() };
+  const files                    = getRecentFiles(7);
+  const { summary, tags, question } = await generateSummary(files);
+  const result  = { content: summary, tags, question, fileCount, recentCount: files.length, generatedAt: new Date().toISOString() };
   writeCache(result);
   return result;
 }

@@ -113,7 +113,7 @@
     background: var(--primary);
     color: #fff;
     border-radius: var(--radius-lg);
-    padding: 18px 18px 16px;
+    padding: 14px 16px 14px;
     margin-bottom: 22px;
     overflow: hidden;
   }
@@ -133,30 +133,238 @@
     opacity: 0.65;
     margin-bottom: 10px;
   }
-  .review-text {
-    font-size: 15px;
-    line-height: 1.6;
-    color: #f3f3f7;
-  }
-  .review-text strong { color: #fff; font-weight: 600; }
-  .review-actions {
+  .review-split {
     display: flex;
-    justify-content: flex-end;
-    margin-top: 14px;
+    gap: 10px;
+    align-items: stretch;
+    min-height: 72px;
   }
-  .review-btn {
-    background: rgba(255,255,255,0.12);
+  .review-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .review-right {
+    flex: 0 0 44%;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 6px;
+    transition: background 0.15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .review-right:hover { background: rgba(255,255,255,0.18); }
+  .review-right-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin-bottom: 6px;
+  }
+  .review-question-text {
+    font-size: 13px;
+    line-height: 1.5;
     color: #fff;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: opacity 0.2s ease;
+  }
+  .review-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .review-tag {
+    background: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.92);
     border-radius: 999px;
-    padding: 8px 14px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .review-tag:hover { background: rgba(255,255,255,0.26); }
+
+  /* Imagination overlay */
+  .imag-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .imag-overlay.visible { opacity: 1; pointer-events: auto; }
+  .imag-panel {
+    position: fixed;
+    left: 50%; bottom: 0;
+    transform: translateX(-50%) translateY(100%);
+    width: min(480px, 100vw);
+    max-height: 88vh;
+    background: var(--bg);
+    border-radius: 18px 18px 0 0;
+    z-index: 201;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    transition: transform 0.28s cubic-bezier(0.34,1.1,0.64,1);
+    overflow: hidden;
+  }
+  .imag-panel.visible { transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .imag-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .imag-header-left { display: flex; align-items: center; gap: 8px; }
+  .imag-header-title { font-size: 14px; font-weight: 600; color: var(--text-1); }
+  .imag-close {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg-2);
+    color: var(--text-2);
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .imag-close:hover { background: var(--line); }
+  .imag-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .imag-carousel {
+    background: var(--primary);
+    border-radius: 12px;
+    padding: 14px 16px 12px;
+    color: #fff;
+    position: relative;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .imag-carousel-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin-bottom: 6px;
+  }
+  .imag-carousel-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+    flex: 1;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+  .imag-carousel-title:hover { opacity: 0.8; }
+  .imag-carousel-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .imag-nav-btn {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+  .imag-nav-btn:hover { background: rgba(255,255,255,0.28); }
+  .imag-carousel-dots { display: flex; gap: 4px; }
+  .imag-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transition: background 0.2s;
+  }
+  .imag-dot.active { background: #fff; }
+  .imag-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .imag-question-box {
+    background: var(--bg-2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .imag-textarea {
+    width: 100%;
+    min-height: 100px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-1);
+    background: var(--bg);
+    resize: none;
+    line-height: 1.6;
+    box-sizing: border-box;
+  }
+  .imag-textarea:focus { outline: none; border-color: var(--primary); }
+  .imag-footer {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px 20px;
+    border-top: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .imag-btn {
+    flex: 1;
+    border-radius: 999px;
+    padding: 9px 12px;
     font-size: 13px;
     font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.18s ease;
+    transition: background 0.15s ease;
   }
-  .review-btn:hover, .review-btn:active { background: rgba(255,255,255,0.2); }
+  .imag-btn-secondary { background: var(--bg-2); color: var(--text-2); }
+  .imag-btn-secondary:hover { background: var(--line); }
+  .imag-btn-primary { background: var(--primary); color: #fff; }
+  .imag-btn-primary:hover { opacity: 0.88; }
+  .imag-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .imag-list-item {
+    background: var(--bg-2);
+    border-radius: 8px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-1);
+    transition: background 0.15s;
+  }
+  .imag-list-item:hover { background: var(--primary-soft); color: var(--primary); }
+  .imag-new-form { display: flex; flex-direction: column; gap: 8px; }
+  .imag-new-input {
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-1);
+    background: var(--bg);
+    box-sizing: border-box;
+    width: 100%;
+  }
+  .imag-new-input:focus { outline: none; border-color: var(--primary); }
 
   /* Tasks card */
   .tasks-card {
@@ -269,38 +477,51 @@
     margin: 4px 4px 10px;
     text-transform: uppercase;
   }
-  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-list { display: flex; flex-direction: column; gap: 6px; }
   .history-item {
     background: var(--bg-soft);
     border-radius: var(--radius);
-    padding: 14px 14px;
+    padding: 11px 10px 11px 14px;
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
     cursor: pointer;
     transition: background 0.15s ease, transform 0.15s ease;
   }
   .history-item:active { transform: scale(0.99); background: #eef0f3; }
-  .history-item .h-title {
-    font-size: 15px;
+  .h-time {
+    flex-shrink: 0;
+    width: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .h-day { font-size: 11px; font-weight: 500; color: var(--text-3); line-height: 1.2; }
+  .h-clock { font-size: 10px; color: var(--text-3); opacity: 0.65; }
+  .h-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .h-title {
+    font-size: 14px;
     font-weight: 500;
     color: var(--text);
     line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
-    -webkit-box-orient: vertical;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .history-item .h-meta {
+  .h-preview {
     font-size: 12px;
     color: var(--text-3);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .history-item .h-meta .sep {
-    width: 3px; height: 3px; border-radius: 50%; background: var(--text-3); opacity: 0.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Bottom input bar (home) */
@@ -510,6 +731,25 @@
   }
 
   .ai-actions { display: flex; gap: 6px; }
+  .note-action-confirm {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--primary);
+    padding: 5px 10px;
+    background: var(--primary-soft);
+    border-radius: 999px;
+    margin: 4px 0;
+  }
+  .note-action-undo {
+    font-size: 11px;
+    color: var(--text-3);
+    text-decoration: underline;
+    background: none;
+    padding: 0;
+  }
+  .note-action-undo:hover { color: var(--text-1); }
   .save-btn {
     display: inline-flex;
     align-items: center;
@@ -581,6 +821,57 @@
   }
   .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .send-btn:not(:disabled):active { transform: scale(0.92); }
+
+  /* Selection quote */
+  #quote-btn {
+    position: fixed;
+    z-index: 300;
+    background: var(--text-1);
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 11px;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+  }
+  #quote-btn.visible { opacity: 1; transform: translateY(0); }
+  .quote-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 10px;
+    margin: 0 0 6px;
+    background: var(--bg-2);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 6px 6px 0;
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .quote-block-text {
+    flex: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 60px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+  .quote-dismiss {
+    flex-shrink: 0;
+    color: var(--text-3);
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 2px;
+    background: none;
+  }
+  .quote-dismiss:hover { color: var(--text-1); }
   .stop-btn {
     width: 34px; height: 34px;
     border-radius: 50%;
@@ -721,22 +1012,19 @@
   .remind-confirm svg { color: var(--primary); }
 
   /* ---------- History delete button ---------- */
-  .history-item { position: relative; }
   .history-del {
     flex-shrink: 0;
-    width: 30px; height: 30px;
+    width: 22px; height: 22px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    line-height: 1;
     color: var(--text-3);
     background: transparent;
     transition: background 0.15s ease, color 0.15s ease;
-    opacity: 0;
-    pointer-events: none;
   }
-  .history-item:hover .history-del,
-  .history-item:focus-within .history-del { opacity: 1; pointer-events: auto; }
   .history-del:hover { background: #fde8e8; color: #c0392b; }
-  .history-del.confirming { opacity: 1; pointer-events: auto; background: #c0392b; color: #fff; border-radius: 999px; width: auto; padding: 0 10px; font-size: 12px; font-weight: 500; }
+  .history-del.confirming { background: #c0392b; color: #fff; }
 
   /* ---------- Task action buttons ---------- */
   .task-actions {
@@ -759,6 +1047,161 @@
   }
   .task-action-btn:hover { color: var(--primary); border-color: var(--primary-soft); background: var(--primary-soft); }
   .task-action-btn.done-btn:hover { color: #2a9d2a; border-color: #d0ead0; background: #f0f8f0; }
+
+  /* ---------- Mode toggle ---------- */
+  .mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .mode-toggle:active { opacity: 0.65; }
+  .mode-icon {
+    color: var(--text-3);
+    flex-shrink: 0;
+    transition: color 0.2s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .mode-toggle:hover .mode-icon { color: var(--primary); transform: rotate(20deg) scale(1.1); }
+
+  /* ---------- Lab grid (Lightning mode) ---------- */
+  .lab-grid {
+    columns: 2;
+    column-gap: 10px;
+    padding: 4px 0 8px;
+  }
+  .lab-section-header {
+    column-span: all;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 14px 0 6px;
+    break-inside: avoid;
+  }
+  .lab-section-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .lab-section-header:first-child { margin-top: 4px; }
+  .lab-card {
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 10px;
+    background: var(--bg-soft);
+    border-radius: var(--radius);
+    padding: 12px 12px 10px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+    vertical-align: top;
+  }
+  .lab-card:active { transform: scale(0.98); background: #eef0f3; }
+  .lab-status {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 999px;
+    margin-bottom: 7px;
+  }
+  .lab-status.s-incubating { background: #fff8e6; color: #b37700; }
+  .lab-status.s-done       { background: #e6f7ef; color: #1a7a45; }
+  .lab-status.s-shelved    { background: var(--bg-soft); color: var(--text-3); border: 1px solid var(--line); }
+  .lab-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 5px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .lab-card-preview {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .lab-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--text-3);
+  }
+  .lab-card-meta { flex: 1; min-width: 0; }
+  .lab-card-actions { display: flex; gap: 5px; flex-shrink: 0; }
+  .lab-action {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--text-3);
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .lab-action.done-btn:hover  { color: #1a7a45; border-color: #a3d9bc; background: #e6f7ef; }
+  .lab-action.shelf-btn:hover { color: var(--text-2); background: var(--bg-soft); }
+  .lab-card.is-shelved { opacity: 0.42; }
+
+  /* ---------- Drawer chat button ---------- */
+  .drawer-chat-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+  }
+  .drawer-chat-btn:hover { background: #ddd9f0; }
+
+  /* ---------- Chat context bar ---------- */
+  .chat-context-bar {
+    padding: 7px 14px;
+    background: var(--primary-soft);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .chat-context-bar:hover { background: #ddd9f0; }
+  .chat-context-bar svg { flex-shrink: 0; opacity: 0.8; }
 </style>
 </head>
 <body>
@@ -768,24 +1211,48 @@
   <section class="page active" id="page-home">
     <header class="home-header">
       <div>
-        <div class="home-title"><span class="dot"></span>Personal Brain</div>
+        <button class="mode-toggle" id="mode-toggle">
+          <span id="mode-label">Explore</span>
+          <svg class="mode-icon" id="mode-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.09 13H11L10 22L20.91 11H14L13 2Z"/></svg>
+        </button>
         <div class="home-sub" id="home-sub"></div>
       </div>
     </header>
 
-    <div class="home-scroll">
+    <div class="home-scroll" id="explore-scroll">
 
       <!-- Review Card -->
       <div class="review-card">
         <div class="review-label">本周回顾</div>
-        <div class="review-text" id="review-text">
-          打开一段对话，探索你的笔记库。
+        <div class="review-split">
+          <div class="review-left">
+            <div class="review-tags" id="review-tags">
+              <span style="opacity:0.5;font-size:12px">加载中…</span>
+            </div>
+          </div>
+          <div class="review-right" id="review-right">
+            <div class="review-right-label">值得长时间思考</div>
+            <div class="review-question-text" id="review-question-text">—</div>
+          </div>
         </div>
-        <div class="review-actions">
-          <button class="review-btn" id="review-discuss">
-            开始对话
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </button>
+      </div>
+
+      <!-- Imagination overlay -->
+      <div id="imag-overlay" class="imag-overlay"></div>
+      <div id="imag-panel" class="imag-panel">
+        <div class="imag-header">
+          <div class="imag-header-left">
+            <span class="imag-header-title">随笔</span>
+          </div>
+          <button class="imag-close" id="imag-close">×</button>
+        </div>
+        <div class="imag-body" id="imag-body">
+          <!-- filled by JS -->
+        </div>
+        <div class="imag-footer">
+          <button class="imag-btn imag-btn-secondary" id="imag-btn-new">新建想法</button>
+          <button class="imag-btn imag-btn-secondary" id="imag-btn-list">想法列表</button>
+          <button class="imag-btn imag-btn-primary" id="imag-btn-save">保存</button>
         </div>
       </div>
 
@@ -815,6 +1282,11 @@
       <ul class="history-list" id="history-list"></ul>
     </div>
 
+    <!-- Lightning mode -->
+    <div class="home-scroll" id="lightning-scroll" style="display:none;">
+      <div class="lab-grid" id="lab-grid"></div>
+    </div>
+
     <!-- Bottom input -->
     <div class="home-input-wrap">
       <form class="home-input" id="home-input-form">
@@ -836,10 +1308,16 @@
       <div class="chat-title" id="chat-title">新对话</div>
     </header>
 
+    <div class="chat-context-bar" id="chat-context-bar" style="display:none;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4.09 13H11L10 22L20.91 11H14L13 2Z"/></svg>
+      <span id="chat-context-title"></span>
+    </div>
+
     <div class="chat-scroll" id="chat-scroll"></div>
 
     <div class="chat-input-wrap" id="chat-input-wrap">
       <div class="chat-input">
+        <div id="quote-block" style="display:none"></div>
         <textarea id="chat-input" rows="1" placeholder="问点什么..."></textarea>
         <div class="input-actions">
           <button class="icon-btn capture-toggle" id="capture-toggle" aria-label="切换捕获模式">
@@ -856,6 +1334,9 @@
     </div>
   </section>
 
+  <!-- Selection quote button (global floating) -->
+  <button id="quote-btn" aria-label="引用选中内容">引用</button>
+
   <!-- Drawer -->
   <div class="drawer-mask" id="drawer-mask"></div>
   <aside class="drawer" id="drawer" aria-hidden="true">
@@ -865,9 +1346,15 @@
         <div class="drawer-title" id="drawer-title"></div>
         <div class="drawer-meta" id="drawer-meta"></div>
       </div>
-      <button class="drawer-close" id="drawer-close" aria-label="关闭">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+        <button class="drawer-chat-btn" id="drawer-chat-btn" style="display:none;" aria-label="开始对话">
+          对话
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drawer-close" id="drawer-close" aria-label="关闭">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
     </div>
     <div class="drawer-body" id="drawer-body"></div>
   </aside>
@@ -902,6 +1389,17 @@ function formatRelativeTime(ts) {
   return `${d.getMonth() + 1} 月 ${d.getDate()} 日`;
 }
 
+function formatTimeParts(ts) {
+  const d = new Date(ts);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const dStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const hm = d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  if (dStart === todayStart) return { day: '今天', time: hm };
+  if (dStart === todayStart - 86400000) return { day: '昨天', time: hm };
+  return { day: `${d.getMonth() + 1}/${d.getDate()}`, time: null };
+}
+
 /* Tasks and conversations are backed by backend APIs — no localStorage needed */
 
 /* =========================================================
@@ -909,9 +1407,11 @@ function formatRelativeTime(ts) {
    ========================================================= */
 const state = {
   page: 'home',
+  mode: 'explore',     // 'explore' | 'lightning'
   captureMode: false,
-  reviewContent: '',   // loaded from /api/review for the discuss button
-  conversation: { id: null, title: '新对话', messages: [], labFileId: null }
+  reviewContent: '',
+  reviewQuestion: '',
+  conversation: { id: null, title: '新对话', messages: [], labFileId: null, labContext: null }
 };
 
 /* TASKS loaded from API, not stored locally */
@@ -928,10 +1428,14 @@ const historyList    = $('#history-list');
 const historyCount   = $('#history-count');
 const homeInputEl    = $('#home-input');
 const homeInputForm  = $('#home-input-form');
-const reviewDiscuss  = $('#review-discuss');
+const reviewRightEl  = $('#review-right');
+const reviewQuestionEl = $('#review-question-text');
+const reviewTagsEl   = $('#review-tags');
 
-const backBtn        = $('#back-btn');
-const chatTitleEl    = $('#chat-title');
+const backBtn           = $('#back-btn');
+const chatTitleEl       = $('#chat-title');
+const chatContextBar    = $('#chat-context-bar');
+const chatContextTitle  = $('#chat-context-title');
 const chatScroll     = $('#chat-scroll');
 const chatInputEl    = $('#chat-input');
 const sendBtn        = $('#send-btn');
@@ -942,9 +1446,11 @@ const chatInputWrap  = $('#chat-input-wrap');
 const drawer         = $('#drawer');
 const drawerMask     = $('#drawer-mask');
 const drawerClose    = $('#drawer-close');
+const drawerChatBtn  = $('#drawer-chat-btn');
 const drawerTitle    = $('#drawer-title');
 const drawerMeta     = $('#drawer-meta');
 const drawerBody     = $('#drawer-body');
+let currentLabItem   = null;
 
 const toastEl        = $('#toast');
 
@@ -965,19 +1471,75 @@ if (window.marked) marked.setOptions({ breaks: true, gfm: true });
 /* =========================================================
    Home: Review card
    ========================================================= */
-const reviewTextEl = $('#review-text');
+
+let homeCarouselItems  = [];
+let homeCarouselIdx    = 0;
+let homeCarouselTimer  = null;
+
+function startHomeCarousel() {
+  if (homeCarouselTimer) clearInterval(homeCarouselTimer);
+  homeCarouselTimer = setInterval(advanceHomeCarousel, 6000);
+}
+
+function advanceHomeCarousel() {
+  if (homeCarouselItems.length < 2) return;
+  homeCarouselIdx = (homeCarouselIdx + 1) % homeCarouselItems.length;
+  renderHomeCarouselItem();
+}
+
+function renderHomeCarouselItem() {
+  const text = homeCarouselItems[homeCarouselIdx] || '—';
+  reviewQuestionEl.style.opacity = '0';
+  setTimeout(() => {
+    reviewQuestionEl.textContent = text;
+    reviewQuestionEl.style.opacity = '1';
+  }, 200);
+}
 
 async function loadReview() {
   try {
     const res  = await fetch(`${API_BASE}/api/review`);
     const data = await res.json();
-    if (data.content) {
-      reviewTextEl.innerHTML = window.marked
-        ? marked.parseInline(data.content)
-        : escapeHtml(data.content);
-      state.reviewContent = data.content;
+    state.reviewContent  = data.content  || '';
+    state.reviewQuestion = data.question || '';
+
+    // Left: hashtag chips
+    if (Array.isArray(data.tags) && data.tags.length > 0) {
+      reviewTagsEl.innerHTML = '';
+      data.tags.forEach(tag => {
+        const chip = document.createElement('button');
+        chip.className = 'review-tag';
+        chip.textContent = '#' + tag;
+        chip.addEventListener('click', () => {
+          goPage('chat');
+          sendMessage(`我想深入聊聊这个主题：${tag}`);
+        });
+        reviewTagsEl.appendChild(chip);
+      });
+    } else {
+      reviewTagsEl.innerHTML = '';
     }
   } catch { /* keep placeholder */ }
+
+  // Build carousel from imaginations + deep question
+  await refreshHomeCarousel();
+}
+
+async function refreshHomeCarousel() {
+  try {
+    const res = await fetch(`${API_BASE}/api/imaginations`);
+    const list = await res.json();
+    imaginations = list; // keep panel cache in sync
+    const titles = list.map(i => i.title);
+    homeCarouselItems = titles.length ? titles : ['还没有 imaginations 笔记'];
+    homeCarouselIdx = 0;
+    renderHomeCarouselItem();
+    startHomeCarousel();
+  } catch {
+    if (state.reviewQuestion) {
+      reviewQuestionEl.textContent = state.reviewQuestion;
+    }
+  }
 }
 
 /* =========================================================
@@ -996,20 +1558,21 @@ async function renderHistory() {
     historyList.innerHTML = `<li style="padding:14px 4px;font-size:13px;color:var(--text-3);text-align:center;">还没有对话记录</li>`;
     return;
   }
-  const ICON_TRASH = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
-
-  historyList.innerHTML = convs.map(c => `
-    <li class="history-item" data-id="${escapeHtml(c.id)}" style="display:flex;align-items:center;gap:8px;">
-      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
-        <div class="h-title">${escapeHtml(c.title)}</div>
-        <div class="h-meta">
-          <span>${escapeHtml(formatRelativeTime(c.updatedAt))}</span>
-          ${c.preview ? `<span class="sep"></span><span>${escapeHtml(c.preview)}</span>` : ''}
-        </div>
+  historyList.innerHTML = convs.map(c => {
+    const { day, time } = formatTimeParts(c.updatedAt);
+    return `
+    <li class="history-item" data-id="${escapeHtml(c.id)}">
+      <div class="h-time">
+        <span class="h-day">${escapeHtml(day)}</span>
+        ${time ? `<span class="h-clock">${escapeHtml(time)}</span>` : ''}
       </div>
-      <button class="history-del" data-id="${escapeHtml(c.id)}" aria-label="删除对话">${ICON_TRASH}</button>
-    </li>
-  `).join('');
+      <div class="h-body">
+        <div class="h-title">${escapeHtml(c.title)}</div>
+        ${c.preview ? `<div class="h-preview">${escapeHtml(c.preview)}</div>` : ''}
+      </div>
+      <button class="history-del" data-id="${escapeHtml(c.id)}" aria-label="删除对话">×</button>
+    </li>`;
+  }).join('');
 
   historyList.querySelectorAll('.history-item').forEach(el => {
     el.addEventListener('click', e => {
@@ -1028,7 +1591,7 @@ async function renderHistory() {
         btn.textContent = '确认删除';
         confirmTimers[id] = setTimeout(() => {
           btn.classList.remove('confirming');
-          btn.innerHTML = ICON_TRASH;
+          btn.textContent = '×';
         }, 2000);
       } else {
         clearTimeout(confirmTimers[id]);
@@ -1041,7 +1604,7 @@ async function renderHistory() {
         } catch {
           showToast('删除失败');
           btn.classList.remove('confirming');
-          btn.innerHTML = ICON_TRASH;
+          btn.textContent = '×';
           btn.disabled = false;
         }
       }
@@ -1097,7 +1660,7 @@ async function renderTasks() {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </span>
       <div style="flex:1;min-width:0;">
-        <div class="task-text">${escapeHtml(t.title)}</div>
+        <div class="task-text">${escapeHtml(t.content)}</div>
         <div class="task-meta">${escapeHtml(formatRemindDate(t.remind))}</div>
       </div>
       <div class="task-actions">
@@ -1151,14 +1714,18 @@ function closeTaskAdd() {
 tasksAddToggle.addEventListener('click', () => {
   tasksAddRow.style.display === 'none' ? openTaskAdd() : closeTaskAdd();
 });
+let tasksInputComposing = false;
+tasksAddInput.addEventListener('compositionstart', () => { tasksInputComposing = true; });
+tasksAddInput.addEventListener('compositionend',   () => { tasksInputComposing = false; });
+
 tasksAddInput.addEventListener('keydown', async e => {
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' && !tasksInputComposing) {
     e.preventDefault();
     const v = tasksAddInput.value.trim();
     if (!v) return;
     tasksAddInput.disabled = true;
     try {
-      await fetch(`${API_BASE}/api/capture`, {
+      await fetch(`${API_BASE}/api/reminders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: v, remind: todayStr() }),
@@ -1223,7 +1790,10 @@ function startNewConversation(initialText) {
     : '新对话';
   state.conversation.messages = [];
   state.conversation.labFileId = null;
+  state.conversation.labContext = null;
+  chatContextBar.style.display = 'none';
   chatTitleEl.textContent = state.conversation.title;
+  clearQuote();
   renderMessages();
   goPage('chat');
   if (initialText) setTimeout(() => sendMessage(initialText), 50);
@@ -1233,7 +1803,8 @@ function startNewConversation(initialText) {
    Persist conversation to backend
    ========================================================= */
 function persistConversation() {
-  if (!state.conversation.messages.some(m => m.role === 'ai' && m.content !== '…' && m.content !== '__remind-picker__')) return;
+  const SPECIAL = ['…', '__remind-picker__', '__note-saved__', '__note-modified__'];
+  if (!state.conversation.messages.some(m => m.role === 'ai' && !SPECIAL.includes(m.content))) return;
   // Fire-and-forget — don't block the UI
   fetch(`${API_BASE}/api/conversations`, {
     method: 'POST',
@@ -1271,7 +1842,20 @@ function buildMessageNode(m) {
   if (m.role === 'user') {
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    bubble.textContent = m.content;
+    // Render quoted prefix「…」\n\n separately
+    const quoteMatch = m.content.match(/^「([\s\S]+?)」\n\n([\s\S]*)$/);
+    if (quoteMatch) {
+      const qb = document.createElement('div');
+      qb.className = 'quote-block';
+      qb.style.marginBottom = '6px';
+      qb.innerHTML = `<span class="quote-block-text">${escapeHtml(quoteMatch[1])}</span>`;
+      bubble.appendChild(qb);
+      const qt = document.createElement('span');
+      qt.textContent = quoteMatch[2];
+      bubble.appendChild(qt);
+    } else {
+      bubble.textContent = m.content;
+    }
     wrap.appendChild(bubble);
     return wrap;
   }
@@ -1279,6 +1863,18 @@ function buildMessageNode(m) {
   // Remind picker (capture mode)
   if (m.content === '__remind-picker__') {
     wrap.appendChild(buildRemindPickerNode(m));
+    return wrap;
+  }
+
+  // Auto note-save confirmation
+  if (m.content === '__note-saved__') {
+    wrap.appendChild(buildNoteSavedNode(m));
+    return wrap;
+  }
+
+  // Auto note-modify confirmation
+  if (m.content === '__note-modified__') {
+    wrap.appendChild(buildNoteModifiedNode(m));
     return wrap;
   }
 
@@ -1302,6 +1898,7 @@ function buildMessageNode(m) {
   const actions = document.createElement('div');
   actions.className = 'ai-actions';
   actions.appendChild(buildSaveBtn(m));
+  if (state.conversation.labFileId) actions.appendChild(buildSaveToNoteBtn(m));
   meta.appendChild(actions);
   wrap.appendChild(meta);
   return wrap;
@@ -1347,6 +1944,176 @@ function buildSaveBtn(msgObj) {
     });
   }
   return btn;
+}
+
+function buildSaveToNoteBtn(msgObj) {
+  const iconNote  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>`;
+  const iconCheck = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  const btn = document.createElement('button');
+
+  function render() {
+    btn.disabled = false;
+    if (msgObj.savedToNote) {
+      btn.className = 'save-btn saved';
+      btn.innerHTML = `${iconCheck} 已存入 <span style="opacity:0.55;font-size:12px;margin-left:1px;">×</span>`;
+      btn.title = '点击从笔记中删除';
+    } else {
+      btn.className = 'save-btn';
+      btn.innerHTML = `${iconNote} 存入原笔记`;
+      btn.title = '';
+    }
+  }
+  render();
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+
+    if (!msgObj.savedToNote) {
+      btn.textContent = '保存中…';
+      const msgs    = state.conversation.messages;
+      const myIdx   = msgs.indexOf(msgObj);
+      const userMsg = myIdx > 0
+        ? [...msgs.slice(0, myIdx)].reverse().find(x => x.role === 'user')
+        : null;
+      try {
+        const res  = await fetch(`${API_BASE}/api/lab/${encodeURIComponent(state.conversation.labFileId)}/discuss`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: userMsg?.content || '', answer: msgObj.content }),
+        });
+        const data = await res.json();
+        msgObj.savedToNote  = true;
+        msgObj.savedNoteKey = data.dateStr;
+        showToast('已存入原笔记');
+        persistConversation();
+      } catch {
+        showToast('保存失败，请重试');
+      }
+    } else {
+      btn.textContent = '删除中…';
+      try {
+        await fetch(`${API_BASE}/api/lab/${encodeURIComponent(state.conversation.labFileId)}/discuss`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'remove', dateStr: msgObj.savedNoteKey }),
+        });
+        msgObj.savedToNote  = false;
+        msgObj.savedNoteKey = null;
+        showToast('已从笔记删除');
+        persistConversation();
+      } catch {
+        showToast('删除失败，请重试');
+      }
+    }
+    render();
+  });
+
+  return btn;
+}
+
+function buildNoteSavedNode(m) {
+  const wrap = document.createElement('div');
+  wrap.className = 'note-action-confirm';
+  wrap.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 已存入笔记`;
+  if (m._dateStr && m._filename) {
+    const undo = document.createElement('button');
+    undo.className = 'note-action-undo';
+    undo.textContent = '撤销';
+    undo.addEventListener('click', async () => {
+      undo.disabled = true;
+      try {
+        await fetch(`${API_BASE}/api/lab/${encodeURIComponent(m._filename)}/discuss`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'remove', dateStr: m._dateStr }),
+        });
+        wrap.innerHTML = '<span style="opacity:0.5">已撤销</span>';
+      } catch { showToast('撤销失败'); undo.disabled = false; }
+    });
+    wrap.appendChild(undo);
+  }
+  return wrap;
+}
+
+function buildNoteModifiedNode(m) {
+  const wrap = document.createElement('div');
+  wrap.className = 'note-action-confirm';
+  wrap.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 笔记已更新`;
+  if (m._backup && m._filename) {
+    const undo = document.createElement('button');
+    undo.className = 'note-action-undo';
+    undo.textContent = '撤销';
+    undo.addEventListener('click', async () => {
+      undo.disabled = true;
+      try {
+        await fetch(`${API_BASE}/api/lab/${encodeURIComponent(m._filename)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body: m._backup }),
+        });
+        wrap.innerHTML = '<span style="opacity:0.5">已撤销</span>';
+      } catch { showToast('撤销失败'); undo.disabled = false; }
+    });
+    wrap.appendChild(undo);
+  }
+  return wrap;
+}
+
+async function autoSaveToNote(filename, question, answer) {
+  try {
+    const r = await fetch(`${API_BASE}/api/lab/${encodeURIComponent(filename)}/discuss`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, answer }),
+    });
+    const data = await r.json();
+    const msg = { role: 'ai', content: '__note-saved__', _filename: filename, _dateStr: data.dateStr };
+    state.conversation.messages.push(msg);
+    renderMessages();
+    persistConversation();
+  } catch { showToast('自动保存失败'); }
+}
+
+async function autoModifyNote(filename, userMsg, aiResponse) {
+  const workingMsg = { role: 'ai', content: '正在根据对话更新笔记…' };
+  state.conversation.messages.push(workingMsg);
+  renderMessages();
+
+  try {
+    // Get current body
+    const noteRes = await fetch(`${API_BASE}/api/lab/${encodeURIComponent(filename)}`);
+    const noteData = await noteRes.json();
+    const backup = noteData.body;
+
+    // Build history for rewrite (last 10 non-special messages)
+    const history = state.conversation.messages
+      .filter(m => !['__remind-picker__','__note-saved__','__note-modified__'].includes(m.content) && m.content !== '正在根据对话更新笔记…')
+      .slice(-10)
+      .map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }));
+
+    const rwRes = await fetch(`${API_BASE}/api/lab/${encodeURIComponent(filename)}/rewrite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentBody: backup, history }),
+    });
+    const rwData = await rwRes.json();
+
+    await fetch(`${API_BASE}/api/lab/${encodeURIComponent(filename)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ body: rwData.body }),
+    });
+
+    const idx = state.conversation.messages.indexOf(workingMsg);
+    state.conversation.messages[idx] = { role: 'ai', content: '__note-modified__', _filename: filename, _backup: backup };
+    renderMessages();
+    persistConversation();
+  } catch {
+    const idx = state.conversation.messages.indexOf(workingMsg);
+    state.conversation.messages[idx] = { role: 'ai', content: '笔记更新失败，请重试。' };
+    renderMessages();
+  }
 }
 
 function buildRemindPickerNode(msgObj) {
@@ -1471,12 +2238,26 @@ function scrollToBottom(smooth = true) {
   chatScroll.scrollTo({ top: chatScroll.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
 }
 
+function hasReminderIntent(text) {
+  const keywords = ['提醒我', '帮我提醒', '为我制定计划', '制定计划', '做个计划', '别忘了', '待办', '设置提醒', '记得提醒', '提醒一下'];
+  return keywords.some(k => text.includes(k));
+}
+
+function hasSaveIntent(text) {
+  return ['存入笔记', '保存到笔记', '存进笔记', '记录到笔记', '帮我存', '存一下', '记下来', '存起来'].some(k => text.includes(k));
+}
+
+function hasModifyIntent(text) {
+  return ['修改笔记', '更新笔记', '改一下笔记', '帮我改', '总结后存入', '整理后存入', '改写笔记', '重写笔记', '更新一下笔记'].some(k => text.includes(k));
+}
+
 /* =========================================================
    Send message (SSE streaming)
    ========================================================= */
 let isStreaming      = false;
 let isComposing      = false;
 let abortController  = null;
+let pendingQuote     = null;
 
 function setStreamingUI(on) {
   isStreaming = on;
@@ -1489,16 +2270,16 @@ async function sendMessage(text) {
   const content = text.trim();
   if (!content || isStreaming) return;
 
-  // Capture mode: save to lab/, show remind picker
+  // Capture mode: save directly to lab/, no remind picker
   if (state.captureMode) {
-    state.conversation.messages.push({ role: 'user', content });
-    if (state.conversation.title === '新对话') {
-      state.conversation.title = '快速捕获 · ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-      chatTitleEl.textContent = state.conversation.title;
-    }
-    const pickerMsg = { role: 'ai', content: '__remind-picker__', _captureContent: content };
-    state.conversation.messages.push(pickerMsg);
-    renderMessages();
+    try {
+      await fetch(`${API_BASE}/api/capture`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+      showToast('已存入 Lab ⚡');
+    } catch { showToast('保存失败'); }
     setCaptureMode(false);
     return;
   }
@@ -1511,10 +2292,17 @@ async function sendMessage(text) {
   }
 
   // Build history for API (exclude current question; map ai→assistant)
-  const history = state.conversation.messages.slice(0, -1).map(m => ({
+  const priorMsgs = state.conversation.messages.slice(0, -1).map(m => ({
     role: m.role === 'ai' ? 'assistant' : 'user',
     content: m.content,
   }));
+  const history = state.conversation.labContext
+    ? [
+        { role: 'user',      content: `以下是我的一篇笔记，请优先基于它回答我的问题：\n\n${state.conversation.labContext}` },
+        { role: 'assistant', content: '好的，我已阅读这篇笔记，请提问。' },
+        ...priorMsgs,
+      ]
+    : priorMsgs;
 
   // Add thinking placeholder
   const aiMsg = { role: 'ai', content: '…', sources: [] };
@@ -1574,13 +2362,18 @@ async function sendMessage(text) {
           aiMsg.content = rawText;
           renderMessages();
           persistConversation();
-          // If anchored to a lab file, append this Q&A to the note
-          if (state.conversation.labFileId && rawText) {
-            fetch(`${API_BASE}/api/lab/${encodeURIComponent(state.conversation.labFileId)}/discuss`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ question: content, answer: rawText }),
-            }).catch(console.error);
+          if (hasReminderIntent(content) || hasReminderIntent(rawText)) {
+            const pickerMsg = { role: 'ai', content: '__remind-picker__', _captureContent: rawText };
+            state.conversation.messages.push(pickerMsg);
+            renderMessages();
+          }
+          const labFile = state.conversation.labFileId;
+          if (labFile) {
+            if (hasModifyIntent(content)) {
+              autoModifyNote(labFile, content, rawText);
+            } else if (hasSaveIntent(content)) {
+              autoSaveToNote(labFile, content, rawText);
+            }
           }
         } else if (json.type === 'error') {
           aiMsg.content = `出错了：${json.message || '未知错误'}`;
@@ -1595,13 +2388,6 @@ async function sendMessage(text) {
         aiMsg.content = rawText;
         renderMessages();
         persistConversation();
-        if (state.conversation.labFileId && rawText) {
-          fetch(`${API_BASE}/api/lab/${encodeURIComponent(state.conversation.labFileId)}/discuss`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: content, answer: rawText }),
-          }).catch(console.error);
-        }
       } else {
         state.conversation.messages.pop(); // remove empty placeholder
         renderMessages();
@@ -1657,6 +2443,8 @@ function setCaptureMode(on) {
    Drawer
    ========================================================= */
 async function openDrawer(filepath, displayName) {
+  currentLabItem = null;
+  drawerChatBtn.style.display = 'none';
   drawerTitle.textContent = displayName || filepath.split('/').pop();
   drawerMeta.textContent  = '加载中…';
   drawerBody.innerHTML    = `<p style="color:var(--text-3)">加载中…</p>`;
@@ -1702,26 +2490,258 @@ function showToast(text) {
    Events: Home
    ========================================================= */
 homeInputEl.addEventListener('focus', () => {
-  homeInputEl.blur();
-  startNewConversation('');
+  if (state.mode === 'explore') {
+    homeInputEl.blur();
+    startNewConversation('');
+  }
 });
-homeInputForm.addEventListener('submit', e => {
+homeInputForm.addEventListener('submit', async e => {
   e.preventDefault();
   const v = homeInputEl.value.trim();
+  if (!v) return;
   homeInputEl.value = '';
-  startNewConversation(v);
+  if (state.mode === 'explore') {
+    startNewConversation(v);
+  } else {
+    await captureIdea(v);
+  }
 });
-reviewDiscuss.addEventListener('click', () => {
-  const prompt = state.reviewContent
-    ? `我看了本周回顾：「${state.reviewContent}」，帮我深入聊聊其中最值得关注的主题。`
-    : '帮我看看最近的笔记，有什么值得关注的主题？';
-  startNewConversation(prompt);
+/* =========================================================
+   Imagination panel
+   ========================================================= */
+const imagOverlay  = $('#imag-overlay');
+const imagPanel    = $('#imag-panel');
+const imagBody     = $('#imag-body');
+const imagBtnNew   = $('#imag-btn-new');
+const imagBtnList  = $('#imag-btn-list');
+const imagBtnSave  = $('#imag-btn-save');
+const imagCloseBtn = $('#imag-close');
+
+let imaginations     = [];   // cached list from API
+let imagCarouselIdx  = 0;
+let imagCarouselTimer = null;
+let imagCurrentFile  = null; // filename of selected imagination (null = answering deep question)
+let imagPanelMode    = 'default'; // 'default' | 'list' | 'new'
+
+function openImagPanel() {
+  imagOverlay.classList.add('visible');
+  imagPanel.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+  imagPanelMode = 'default';
+  imagCurrentFile = null;
+  renderImagBody();
+  startImagCarousel();
+  fetchImaginations();
+}
+
+function closeImagPanel() {
+  imagOverlay.classList.remove('visible');
+  imagPanel.classList.remove('visible');
+  document.body.style.overflow = '';
+  clearImagCarousel();
+}
+
+async function fetchImaginations() {
+  try {
+    const res = await fetch(`${API_BASE}/api/imaginations`);
+    imaginations = await res.json();
+    renderImagCarousel();
+  } catch {}
+}
+
+function startImagCarousel() {
+  clearImagCarousel();
+  imagCarouselTimer = setInterval(() => {
+    if (imaginations.length > 1) {
+      imagCarouselIdx = (imagCarouselIdx + 1) % imaginations.length;
+      renderImagCarousel();
+    }
+  }, 8000);
+}
+
+function clearImagCarousel() {
+  if (imagCarouselTimer) { clearInterval(imagCarouselTimer); imagCarouselTimer = null; }
+}
+
+function renderImagCarousel() {
+  const el = $('#imag-carousel-title');
+  const dotsEl = $('#imag-carousel-dots');
+  if (!el || !imaginations.length) return;
+  const item = imaginations[imagCarouselIdx];
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = item.title;
+    el.style.opacity = '1';
+  }, 150);
+  if (dotsEl) {
+    dotsEl.innerHTML = imaginations.slice(0, 5).map((_, i) =>
+      `<span class="imag-dot${i === imagCarouselIdx % Math.min(imaginations.length,5) ? ' active' : ''}"></span>`
+    ).join('');
+  }
+}
+
+function renderImagBody() {
+  const question = state.reviewQuestion || '这周什么在你脑子里转？';
+
+  if (imagPanelMode === 'list') {
+    imagBody.innerHTML = `
+      <div class="imag-section-label">所有想法</div>
+      <ul class="imag-list" id="imag-list-ul">
+        ${imaginations.length === 0
+          ? '<li style="color:var(--text-3);font-size:13px">暂无想法</li>'
+          : imaginations.map(i => `<li class="imag-list-item" data-id="${escapeHtml(i.id)}">${escapeHtml(i.title)}</li>`).join('')}
+      </ul>`;
+    imagBody.querySelectorAll('.imag-list-item').forEach(li => {
+      li.addEventListener('click', () => {
+        imagCurrentFile = li.getAttribute('data-id');
+        imagPanelMode = 'default';
+        renderImagBody();
+      });
+    });
+    return;
+  }
+
+  if (imagPanelMode === 'new') {
+    imagBody.innerHTML = `
+      <div class="imag-section-label">新建想法</div>
+      <div class="imag-new-form">
+        <input class="imag-new-input" id="imag-new-title" placeholder="想法标题" maxlength="40" />
+        <textarea class="imag-textarea" id="imag-new-content" placeholder="展开写写…（可留空）" style="min-height:80px"></textarea>
+      </div>`;
+    setTimeout(() => $('#imag-new-title')?.focus(), 60);
+    return;
+  }
+
+  // default mode
+  const carouselHtml = `
+    <div class="imag-carousel" id="imag-carousel-box">
+      <div class="imag-carousel-label">imaginations</div>
+      <div class="imag-carousel-title" id="imag-carousel-title" title="点击选中该想法">
+        ${imaginations.length ? escapeHtml(imaginations[imagCarouselIdx % Math.max(imaginations.length,1)]?.title || '') : '加载中…'}
+      </div>
+      <div class="imag-carousel-nav">
+        <button class="imag-nav-btn" id="imag-prev">‹</button>
+        <button class="imag-nav-btn" id="imag-next">›</button>
+        <div class="imag-carousel-dots" id="imag-carousel-dots"></div>
+      </div>
+    </div>`;
+
+  const weeklyQuestion = state.reviewQuestion;
+  const weeklySection = weeklyQuestion ? `
+    <div>
+      <div class="imag-section-label">本周回顾问题 <span style="font-weight:400;opacity:0.6;text-transform:none">· AI 生成</span></div>
+      <div class="imag-question-box">${escapeHtml(weeklyQuestion)}</div>
+    </div>` : '';
+
+  const subjectSection = imagCurrentFile ? `
+    <div>
+      <div class="imag-section-label">当前想法</div>
+      <div class="imag-question-box">${escapeHtml(imagCurrentFile.replace(/\.md$/, ''))}</div>
+    </div>` : '';
+
+  imagBody.innerHTML = `
+    ${carouselHtml}
+    ${subjectSection}
+    ${weeklySection}
+    <textarea class="imag-textarea" id="imag-textarea" placeholder="写下你的随笔…"></textarea>`;
+
+  // wire carousel title click → select that imagination
+  $('#imag-carousel-title')?.addEventListener('click', () => {
+    if (!imaginations.length) return;
+    imagCurrentFile = imaginations[imagCarouselIdx % imaginations.length].id;
+    renderImagBody();
+  });
+  $('#imag-prev')?.addEventListener('click', () => {
+    imagCarouselIdx = (imagCarouselIdx - 1 + imaginations.length) % Math.max(imaginations.length,1);
+    renderImagCarousel();
+    startImagCarousel();
+  });
+  $('#imag-next')?.addEventListener('click', () => {
+    imagCarouselIdx = (imagCarouselIdx + 1) % Math.max(imaginations.length,1);
+    renderImagCarousel();
+    startImagCarousel();
+  });
+
+  renderImagCarousel();
+}
+
+imagBtnNew.addEventListener('click', () => {
+  imagPanelMode = 'new';
+  renderImagBody();
 });
+
+imagBtnList.addEventListener('click', () => {
+  imagPanelMode = 'list';
+  renderImagBody();
+});
+
+imagBtnSave.addEventListener('click', async () => {
+  if (imagPanelMode === 'new') {
+    const titleEl   = $('#imag-new-title');
+    const contentEl = $('#imag-new-content');
+    const title = titleEl?.value.trim();
+    if (!title) { titleEl?.focus(); showToast('请输入标题'); return; }
+    imagBtnSave.disabled = true;
+    try {
+      const r    = await fetch(`${API_BASE}/api/imaginations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content: contentEl?.value.trim() || '' }),
+      });
+      const data = await r.json();
+      await fetchImaginations();
+      refreshHomeCarousel();
+      imagCurrentFile = data.id;
+      imagPanelMode = 'default';
+      renderImagBody();
+      showToast('想法已保存 ✓');
+    } catch { showToast('保存失败'); }
+    imagBtnSave.disabled = false;
+    return;
+  }
+
+  // default mode: save essay text
+  const textarea = $('#imag-textarea');
+  const text = textarea?.value.trim();
+  if (!text) { textarea?.focus(); showToast('请先写点什么'); return; }
+  imagBtnSave.disabled = true;
+  try {
+    if (imagCurrentFile) {
+      await fetch(`${API_BASE}/api/imaginations/${encodeURIComponent(imagCurrentFile)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+    } else {
+      // answer to deep question → save as new imagination note
+      const q = state.reviewQuestion || '随笔';
+      await fetch(`${API_BASE}/api/imaginations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: q.replace(/[？?]$/, '').slice(0, 30), content: text }),
+      });
+      await fetchImaginations();
+      refreshHomeCarousel();
+    }
+    if (textarea) textarea.value = '';
+    showToast('已保存到 imaginations ✓');
+  } catch { showToast('保存失败'); }
+  imagBtnSave.disabled = false;
+});
+
+imagCloseBtn.addEventListener('click', closeImagPanel);
+imagOverlay.addEventListener('click', closeImagPanel);
+reviewRightEl.addEventListener('click', openImagPanel);
 
 /* =========================================================
    Events: Chat
    ========================================================= */
-backBtn.addEventListener('click', () => { closeDrawer(); goPage('home'); });
+backBtn.addEventListener('click', () => {
+  closeDrawer();
+  state.conversation.labContext = null;
+  chatContextBar.style.display = 'none';
+  goPage('home');
+});
 
 function autoResize() {
   chatInputEl.style.height = 'auto';
@@ -1736,26 +2756,26 @@ chatInputEl.addEventListener('input', () => {
   sendBtn.disabled = chatInputEl.value.trim().length === 0 || isStreaming;
 });
 
+function collectInput() {
+  const v = chatInputEl.value;
+  chatInputEl.value = '';
+  autoResize();
+  sendBtn.disabled = true;
+  const full = pendingQuote ? `「${pendingQuote}」\n\n${v}` : v;
+  clearQuote();
+  return full;
+}
+
 chatInputEl.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
     e.preventDefault();
-    if (!sendBtn.disabled) {
-      const v = chatInputEl.value;
-      chatInputEl.value = '';
-      autoResize();
-      sendBtn.disabled = true;
-      sendMessage(v);
-    }
+    if (!sendBtn.disabled) sendMessage(collectInput());
   }
 });
 
 sendBtn.addEventListener('click', () => {
   if (sendBtn.disabled) return;
-  const v = chatInputEl.value;
-  chatInputEl.value = '';
-  autoResize();
-  sendBtn.disabled = true;
-  sendMessage(v);
+  sendMessage(collectInput());
 });
 
 captureToggle.addEventListener('click', () => setCaptureMode(!state.captureMode));
@@ -1766,6 +2786,259 @@ stopBtn.addEventListener('click', () => abortController?.abort());
    ========================================================= */
 drawerMask.addEventListener('click', closeDrawer);
 drawerClose.addEventListener('click', closeDrawer);
+chatContextBar.addEventListener('click', () => {
+  if (currentLabItem) openLabDrawer(currentLabItem);
+});
+
+drawerChatBtn.addEventListener('click', () => {
+  if (!currentLabItem) return;
+  const item = currentLabItem;
+  closeDrawer();
+  openLabChat(item);
+});
+
+/* =========================================================
+   Mode switcher
+   ========================================================= */
+const exploreScroll  = $('#explore-scroll');
+const lightningScroll = $('#lightning-scroll');
+const modeLabelEl    = $('#mode-label');
+const modeIconEl     = $('#mode-icon');
+const modeToggleBtn  = $('#mode-toggle');
+
+const ICON_LIGHTNING = `<path d="M13 2L4.09 13H11L10 22L20.91 11H14L13 2Z"/>`;
+const ICON_EXPLORE   = `<circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m20 20-3.5-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>`;
+
+function setMode(mode) {
+  state.mode = mode;
+  if (mode === 'explore') {
+    modeLabelEl.textContent = 'Explore';
+    modeIconEl.innerHTML = ICON_LIGHTNING;
+    modeIconEl.setAttribute('fill', 'currentColor');
+    exploreScroll.style.display  = '';
+    lightningScroll.style.display = 'none';
+    homeInputEl.placeholder = '问点什么，或记录一个想法…';
+  } else {
+    modeLabelEl.textContent = 'Lightning';
+    modeIconEl.innerHTML = ICON_EXPLORE;
+    modeIconEl.setAttribute('fill', 'none');
+    exploreScroll.style.display  = 'none';
+    lightningScroll.style.display = '';
+    homeInputEl.placeholder = 'Flash an idea…';
+    renderLab();
+  }
+}
+
+modeToggleBtn.addEventListener('click', () => {
+  setMode(state.mode === 'explore' ? 'lightning' : 'explore');
+});
+
+/* =========================================================
+   Lab (Lightning mode)
+   ========================================================= */
+const labGrid = $('#lab-grid');
+
+function labStatusLabel(s) {
+  return { incubating: 'Active', done: 'Done', shelved: 'Shelved' }[s] || s;
+}
+function labStatusClass(s) {
+  return { incubating: 's-incubating', done: 's-done', shelved: 's-shelved' }[s] || 's-incubating';
+}
+function formatLabDate(str) {
+  if (!str) return '';
+  const [, m, d] = str.split('-');
+  return `${+m}/${+d}`;
+}
+
+async function renderLab() {
+  labGrid.innerHTML = `<div style="font-size:13px;color:var(--text-3);padding:20px 4px;">加载中…</div>`;
+  let ideas = [];
+  try {
+    const res = await fetch(`${API_BASE}/api/lab`);
+    ideas = await res.json();
+  } catch {
+    labGrid.innerHTML = `<div style="font-size:13px;color:var(--text-3);padding:20px 4px;">无法加载</div>`;
+    return;
+  }
+  if (ideas.length === 0) {
+    labGrid.innerHTML = `<div style="font-size:13px;color:var(--text-3);padding:20px 4px;">还没有想法，用下方输入框记录第一条吧</div>`;
+    return;
+  }
+
+  // Group: '' = root, otherwise folder name
+  const groups = {};
+  ideas.forEach(item => {
+    const key = item.folder || '';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
+  // Root first, then folders alphabetically
+  const keys = ['', ...Object.keys(groups).filter(k => k).sort()];
+
+  labGrid.innerHTML = '';
+  const allItems = []; // flat ordered list for click-index lookup
+
+  keys.forEach(key => {
+    const group = groups[key];
+    if (!group) return;
+
+    if (key) {
+      const hdr = document.createElement('div');
+      hdr.className = 'lab-section-header';
+      hdr.textContent = key.split('/').pop(); // show only deepest folder name
+      labGrid.appendChild(hdr);
+    }
+
+    group.forEach(item => {
+      allItems.push(item);
+      const card = document.createElement('div');
+      card.className = `lab-card${item.status === 'shelved' ? ' is-shelved' : ''}`;
+      card.dataset.id = item.id;
+      card.innerHTML = `
+        <span class="lab-status ${escapeHtml(labStatusClass(item.status))}">${escapeHtml(labStatusLabel(item.status))}</span>
+        <div class="lab-card-title">${escapeHtml(item.title)}</div>
+        ${item.preview ? `<div class="lab-card-preview">${escapeHtml(item.preview)}</div>` : ''}
+        <div class="lab-card-footer">
+          <span class="lab-card-meta">
+            ${escapeHtml(formatLabDate(item.created))}${item.discussionCount ? ` · ${item.discussionCount}条` : ''}
+          </span>
+          <div class="lab-card-actions">
+            ${item.status !== 'done'    ? `<button class="lab-action done-btn"  data-id="${escapeHtml(item.id)}">完成</button>` : ''}
+            ${item.status !== 'shelved' ? `<button class="lab-action shelf-btn" data-id="${escapeHtml(item.id)}">搁置</button>` : ''}
+          </div>
+        </div>`;
+
+      card.addEventListener('click', e => {
+        if (e.target.closest('.lab-action')) return;
+        openLabDrawer(item);
+      });
+      card.querySelector('.done-btn')?.addEventListener('click', async e => {
+        e.stopPropagation();
+        e.target.textContent = '…'; e.target.disabled = true;
+        await patchReminder(item.id, { status: 'done' });
+        renderLab();
+      });
+      card.querySelector('.shelf-btn')?.addEventListener('click', async e => {
+        e.stopPropagation();
+        e.target.textContent = '…'; e.target.disabled = true;
+        await patchReminder(item.id, { status: 'shelved' });
+        renderLab();
+      });
+      labGrid.appendChild(card);
+    });
+  });
+}
+
+function openLabChat(item) {
+  state.conversation.id        = 'c' + Date.now();
+  state.conversation.title     = item.title.length > 18 ? item.title.slice(0, 18) + '…' : item.title;
+  state.conversation.messages  = [];
+  state.conversation.labFileId = item.id;
+  state.conversation.labContext = item.content;
+  chatTitleEl.textContent      = state.conversation.title;
+  chatContextTitle.textContent = item.title;
+  chatContextBar.style.display = '';
+  renderMessages();
+  goPage('chat');
+}
+
+function openLabDrawer(item) {
+  currentLabItem = item;
+  drawerTitle.textContent = item.title;
+  drawerMeta.innerHTML =
+    `<span style="display:inline-block;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-right:6px;" class="lab-status ${labStatusClass(item.status)}">${labStatusLabel(item.status)}</span>` +
+    `${item.created || ''}` +
+    (item.discussionCount ? ` · ${item.discussionCount} note${item.discussionCount > 1 ? 's' : ''}` : '');
+  drawerBody.innerHTML = window.marked ? marked.parse(item.content) : escapeHtml(item.content);
+  drawerChatBtn.style.display = '';
+  drawer.classList.add('open');
+  drawerMask.classList.add('open');
+  drawer.setAttribute('aria-hidden', 'false');
+}
+
+async function captureIdea(content) {
+  try {
+    await fetch(`${API_BASE}/api/capture`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+    showToast('Saved ⚡');
+    renderLab();
+  } catch {
+    showToast('保存失败');
+  }
+}
+
+/* =========================================================
+   Selection quote
+   ========================================================= */
+const quoteBtn   = $('#quote-btn');
+const quoteBlock = $('#quote-block');
+
+function setQuote(text) {
+  pendingQuote = text;
+  quoteBlock.style.display = 'flex';
+  quoteBlock.className = 'quote-block';
+  quoteBlock.innerHTML = `
+    <span class="quote-block-text">${escapeHtml(text)}</span>
+    <button class="quote-dismiss" title="取消引用">×</button>`;
+  quoteBlock.querySelector('.quote-dismiss').addEventListener('click', clearQuote);
+  chatInputEl.focus();
+}
+
+function clearQuote() {
+  pendingQuote = null;
+  quoteBlock.style.display = 'none';
+  quoteBlock.innerHTML = '';
+}
+
+// Show floating button on selection within a chat bubble
+document.addEventListener('mouseup', e => {
+  // Don't steal clicks from the quote button itself
+  if (e.target === quoteBtn) return;
+
+  const sel = window.getSelection();
+  const text = sel?.toString().trim();
+
+  if (!text) { hideQuoteBtn(); return; }
+
+  // Confirm selection is inside a chat message bubble
+  const range = sel.getRangeAt(0);
+  const container = range.commonAncestorContainer;
+  const bubble = (container.nodeType === Node.TEXT_NODE ? container.parentElement : container)
+    .closest('.bubble');
+  if (!bubble) { hideQuoteBtn(); return; }
+
+  // Position button just above the end of the selection
+  const rect = range.getBoundingClientRect();
+  quoteBtn.style.left = `${rect.left + rect.width / 2 - quoteBtn.offsetWidth / 2}px`;
+  quoteBtn.style.top  = `${rect.top - 36 + window.scrollY}px`;
+  quoteBtn.classList.add('visible');
+  quoteBtn._pendingText = text;
+});
+
+// Hide when clicking elsewhere (but not when clicking quote button)
+document.addEventListener('mousedown', e => {
+  if (e.target !== quoteBtn) hideQuoteBtn();
+});
+
+function hideQuoteBtn() {
+  quoteBtn.classList.remove('visible');
+  quoteBtn._pendingText = null;
+}
+
+quoteBtn.addEventListener('mousedown', e => {
+  e.preventDefault(); // prevent selection from clearing before we read it
+});
+
+quoteBtn.addEventListener('click', () => {
+  const text = quoteBtn._pendingText || window.getSelection()?.toString().trim();
+  if (!text) return;
+  setQuote(text);
+  hideQuoteBtn();
+  window.getSelection()?.removeAllRanges();
+});
 
 /* =========================================================
    Init

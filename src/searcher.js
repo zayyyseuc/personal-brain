@@ -26,6 +26,11 @@ async function askStream(question, history = []) {
     ? [...new Set(results.slice(0, 5).map(r => r.item.metadata.source))]
     : [];
 
+  console.log(`\n[检索] "${question}"`);
+  results.forEach((r, i) => {
+    console.log(`  [${i+1}] ${r.item.metadata.source} (score: ${r.score.toFixed(3)})`);
+  });
+
   const context = results.length > 0
     ? results.map((r, i) => `[${i+1}] ${r.item.metadata.text}`).join('\n\n---\n\n')
     : '（未找到相关笔记）';

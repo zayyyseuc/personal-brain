@@ -9,6 +9,15 @@ function ensureLabDir() {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 }
 
+function safeLabPath(relPath) {
+  const root = path.resolve(labDir());
+  const full = path.resolve(root, relPath);
+  if (!full.startsWith(root + path.sep) && full !== root) {
+    const err = new Error('路径不合法'); err.status = 403; throw err;
+  }
+  return full;
+}
+
 /* ---------- Frontmatter helpers ---------- */
 
 function parseFrontmatter(raw) {
@@ -46,7 +55,7 @@ function createIdea({ content, remind }) {
   const hhmm = now.toTimeString().slice(0, 5).replace(':', '');
   const slug = slugify(content);
   const filename = `${date}-${hhmm}-${slug}.md`;
-  const filepath = path.join(labDir(), filename);
+  const filepath = safeLabPath(filename);
 
   const meta = { type: 'idea', status: 'incubating', created: date };
   if (remind) meta.remind = remind;
@@ -63,7 +72,7 @@ function listReminders() {
     .filter(f => f.endsWith('.md'))
     .map(filename => {
       try {
-        const raw = fs.readFileSync(path.join(labDir(), filename), 'utf-8');
+        const raw = fs.readFileSync(safeLabPath(filename), 'utf-8');
         const { meta, content } = parseFrontmatter(raw);
         return { id: filename, meta, content };
       } catch { return null; }
@@ -86,7 +95,7 @@ function listReminders() {
 }
 
 function updateReminder(filename, { status, remind }) {
-  const filepath = path.join(labDir(), filename);
+  const filepath = safeLabPath(filename);
   if (!fs.existsSync(filepath)) {
     const err = new Error('笔记不存在'); err.status = 404; throw err;
   }
@@ -107,23 +116,23 @@ function updateReminder(filename, { status, remind }) {
 /* ---------- Append Q&A discussion to a lab note ---------- */
 
 function appendDiscussion(filename, { question, answer }) {
-  const filepath = path.join(labDir(), filename);
+  const filepath = safeLabPath(filename);
   if (!fs.existsSync(filepath)) {
     const err = new Error('文件不存在'); err.status = 404; throw err;
   }
 
   const now     = new Date();
-  const dateStr = now.toLocaleString('zh-CN', {
-    month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
+  const dateStr = now.toISOString().slice(0, 16).replace('T', ' ');
 
   const entry = [
     '',
-    `### ${dateStr}`,
+    '---',
     '',
-    `**Q：** ${question.trim()}`,
+    `**Q** · ${dateStr}`,
     '',
-    answer.trim().split('\n').map(l => l).join('\n'), // preserve markdown
+    question.trim(),
+    '',
+    answer.trim(),
     '',
   ].join('\n');
 
@@ -132,8 +141,92 @@ function appendDiscussion(filename, { question, answer }) {
   if (!raw.includes('## 讨论记录')) {
     fs.appendFileSync(filepath, '\n\n## 讨论记录\n' + entry, 'utf-8');
   } else {
-    fs.appendFileSync(filepath, '\n---\n' + entry, 'utf-8');
+    fs.appendFileSync(filepath, entry, 'utf-8');
   }
+
+  return { dateStr };
 }
 
-module.exports = { createIdea, listReminders, updateReminder, appendDiscussion };
+function removeDiscussion(filename, dateStr) {
+  const filepath = safeLabPath(filename);
+  if (!fs.existsSync(filepath)) return;
+
+  let raw = fs.readFileSync(filepath, 'utf-8');
+  const marker     = `**Q** · ${dateStr}`;
+  const mi         = raw.indexOf(marker);
+  if (mi === -1) return;
+
+  const blockStart = raw.lastIndexOf('\n---\n\n', mi);
+  if (blockStart === -1) return;
+
+  const nextStart  = raw.indexOf('\n---\n\n', mi + marker.length);
+  const blockEnd   = nextStart === -1 ? raw.length : nextStart;
+
+  raw = raw.slice(0, blockStart) + raw.slice(blockEnd);
+  raw = raw.replace(/\n\n## 讨论记录\s*$/, '');
+
+  fs.writeFileSync(filepath, raw, 'utf-8');
+}
+
+function listIdeas() {
+  ensureLabDir();
+  const root    = labDir();
+  const results = [];
+
+  (function walk(dir, folder) {
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+    catch { return; }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full, folder ? `${folder}/${entry.name}` : entry.name);
+      } else if (entry.name.endsWith('.md')) {
+        try {
+          const raw  = fs.readFileSync(full, 'utf-8');
+          const { meta, content } = parseFrontmatter(raw);
+          const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+          const title   = lines[0]?.replace(/^#+\s*/, '').slice(0, 80) || entry.name.replace('.md', '');
+          const preview = lines.slice(1).join(' ').slice(0, 140);
+          const discussionCount = (content.match(/^### /gm) || []).length;
+          results.push({
+            id:      folder ? `${folder}/${entry.name}` : entry.name,
+            title,
+            preview,
+            folder:  folder || '',
+            status:  meta.status  || 'incubating',
+            created: meta.created || '',
+            remind:  meta.remind  || null,
+            discussionCount,
+            content,
+          });
+        } catch {}
+      }
+    }
+  })(root, '');
+
+  return results.sort((a, b) => b.created.localeCompare(a.created));
+}
+
+function getBody(filename) {
+  const fp = safeLabPath(filename);
+  if (!fs.existsSync(fp)) { const e = new Error('文件不存在'); e.status = 404; throw e; }
+  const raw = fs.readFileSync(fp, 'utf-8');
+  const { meta, content } = parseFrontmatter(raw);
+  const sep = content.indexOf('\n## 讨论记录');
+  const body    = sep === -1 ? content : content.slice(0, sep).trim();
+  const discuss = sep === -1 ? '' : content.slice(sep);
+  return { filename, meta, body, discuss };
+}
+
+function replaceBody(filename, newBody) {
+  const fp = safeLabPath(filename);
+  if (!fs.existsSync(fp)) { const e = new Error('文件不存在'); e.status = 404; throw e; }
+  const raw = fs.readFileSync(fp, 'utf-8');
+  const { meta, content } = parseFrontmatter(raw);
+  const sep     = content.indexOf('\n## 讨论记录');
+  const discuss = sep === -1 ? '' : content.slice(sep);
+  fs.writeFileSync(fp, stringifyFrontmatter(meta, newBody.trim() + discuss), 'utf-8');
+}
+
+module.exports = { createIdea, appendDiscussion, removeDiscussion, listIdeas, getBody, replaceBody };

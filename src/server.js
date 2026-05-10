@@ -5,8 +5,12 @@ const fs      = require('fs');
 const { askStream }                        = require('./searcher');
 const { indexAll }                         = require('./indexer');
 const { startWatcher }                     = require('./watcher');
-const { createIdea, listReminders, updateReminder, appendDiscussion } = require('./lab');
+const { createIdea, appendDiscussion, removeDiscussion, listIdeas, getBody, replaceBody } = require('./lab');
+const OpenAI = require('openai');
+const rewriteClient = new OpenAI({ apiKey: process.env.SILICONFLOW_API_KEY, baseURL: 'https://api.siliconflow.cn/v1' });
+const { add: addReminder, listDue, update: updateReminder, remove: removeReminder } = require('./reminders');
 const { getReview }                        = require('./reviewer');
+const { list: listImaginations, get: getImagination, create: createImagination, append: appendImagination } = require('./imaginations');
 const { save: saveConv, list: listConvs, get: getConv, remove: removeConv } = require('./conversations');
 require('dotenv').config();
 
@@ -69,26 +73,79 @@ app.post('/api/capture', (req, res) => {
   }
 });
 
+// 获取全部 lab 想法（Lightning 模式）
+app.get('/api/lab', (req, res) => {
+  try {
+    res.json(listIdeas());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 新增提醒
+app.post('/api/reminders', (req, res) => {
+  const { content, remind } = req.body;
+  if (!content?.trim()) return res.status(400).json({ error: '内容不能为空' });
+  try {
+    res.json(addReminder({ content, remind }));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 获取今日及过期的提醒
 app.get('/api/reminders', (req, res) => {
   try {
-    res.json(listReminders());
+    res.json(listDue());
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// 更新提醒状态（snooze / done / shelved）
-app.patch('/api/reminders/:filename', (req, res) => {
-  const { filename } = req.params;
+// 更新提醒（snooze / done）
+app.patch('/api/reminders/:id', (req, res) => {
   const { status, remind } = req.body;
   try {
-    const result = updateReminder(filename, { status, remind });
-    res.json(result);
+    res.json(updateReminder(req.params.id, { status, remind }));
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
   }
+});
+
+// 删除提醒
+app.delete('/api/reminders/:id', (req, res) => {
+  try {
+    removeReminder(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// Imaginations
+app.get('/api/imaginations', (req, res) => {
+  try { res.json(listImaginations()); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/imaginations/:filename', (req, res) => {
+  try { res.json(getImagination(req.params.filename)); }
+  catch (err) { res.status(err.status || 500).json({ error: err.message }); }
+});
+
+app.post('/api/imaginations', (req, res) => {
+  const { title, content } = req.body;
+  if (!title?.trim()) return res.status(400).json({ error: '标题不能为空' });
+  try { res.json(createImagination(title, content || '')); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.patch('/api/imaginations/:filename', (req, res) => {
+  const { text } = req.body;
+  if (!text?.trim()) return res.status(400).json({ error: '内容不能为空' });
+  try { appendImagination(req.params.filename, text); res.json({ ok: true }); }
+  catch (err) { res.status(err.status || 500).json({ error: err.message }); }
 });
 
 // 本周回顾摘要（24h 缓存，vault 有新文件时自动失效）
@@ -138,15 +195,71 @@ app.get('/api/conversations/:id', (req, res) => {
   res.json(data);
 });
 
-// 向 lab 笔记追加讨论记录
+// 向 lab 笔记追加讨论记录，或删除指定条目
 app.patch('/api/lab/:filename/discuss', (req, res) => {
-  const { question, answer } = req.body;
+  const filename = decodeURIComponent(req.params.filename);
+  const { question, answer, action, dateStr } = req.body;
+
+  if (action === 'remove') {
+    if (!dateStr) return res.status(400).json({ error: 'dateStr 不能为空' });
+    try {
+      removeDiscussion(filename, dateStr);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(err.status || 500).json({ error: err.message });
+    }
+    return;
+  }
+
   if (!question || !answer) return res.status(400).json({ error: '缺少 question 或 answer' });
   try {
-    appendDiscussion(req.params.filename, { question, answer });
-    res.json({ ok: true });
+    const result = appendDiscussion(filename, { question, answer });
+    res.json(result);
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// 读取 lab 笔记正文（不含讨论记录）
+app.get('/api/lab/:filename', (req, res) => {
+  const filename = decodeURIComponent(req.params.filename);
+  try { res.json(getBody(filename)); }
+  catch (err) { res.status(err.status || 500).json({ error: err.message }); }
+});
+
+// 替换 lab 笔记正文（保留 frontmatter 和讨论记录）
+app.put('/api/lab/:filename', (req, res) => {
+  const filename = decodeURIComponent(req.params.filename);
+  const { body } = req.body;
+  if (!body?.trim()) return res.status(400).json({ error: '内容不能为空' });
+  try { replaceBody(filename, body); res.json({ ok: true }); }
+  catch (err) { res.status(err.status || 500).json({ error: err.message }); }
+});
+
+// AI 改写 lab 笔记正文
+app.post('/api/lab/:filename/rewrite', async (req, res) => {
+  req.params.filename = decodeURIComponent(req.params.filename);
+  const { currentBody, history = [] } = req.body;
+  if (!currentBody) return res.status(400).json({ error: '缺少 currentBody' });
+  try {
+    const messages = [
+      {
+        role: 'system',
+        content: '你是用户的笔记助手。根据对话内容改写笔记正文。只输出改写后的正文（Markdown），不要加任何解释，不要包含 frontmatter，不要包含讨论记录。',
+      },
+      {
+        role: 'user',
+        content: `当前笔记正文：\n\n${currentBody}\n\n---\n\n对话记录：\n\n${history.map(h => `**${h.role === 'user' ? '我' : 'AI'}**：${h.content}`).join('\n\n')}\n\n请根据以上对话，更新笔记正文。`,
+      },
+    ];
+    const completion = await rewriteClient.chat.completions.create({
+      model: 'deepseek-ai/DeepSeek-V3.2',
+      messages,
+      max_tokens: 1200,
+    });
+    res.json({ body: completion.choices[0].message.content.trim() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
