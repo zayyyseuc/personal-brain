@@ -205,12 +205,12 @@
     transition: opacity 0.2s ease;
   }
   .imag-overlay.visible { opacity: 1; pointer-events: auto; }
-  .imag-panel {
+    .imag-panel {
     position: fixed;
     left: 50%; bottom: 0;
     transform: translateX(-50%) translateY(100%);
     width: min(480px, 100vw);
-    max-height: 88vh;
+    max-height: 85dvh;
     background: var(--bg);
     border-radius: 18px 18px 0 0;
     z-index: 201;
@@ -218,7 +218,7 @@
     flex-direction: column;
     pointer-events: none;
     transition: transform 0.28s cubic-bezier(0.34,1.1,0.64,1);
-    overflow: hidden;
+    overflow: visible;
   }
   .imag-panel.visible { transform: translateX(-50%) translateY(0); pointer-events: auto; }
   .imag-header {
@@ -240,7 +240,7 @@
     display: flex; align-items: center; justify-content: center;
   }
   .imag-close:hover { background: var(--line); }
-  .imag-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .imag-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
   .imag-carousel {
     background: var(--primary);
     border-radius: 12px;
@@ -325,7 +325,7 @@
   .imag-footer {
     display: flex;
     gap: 8px;
-    padding: 10px 16px 20px;
+    padding: 10px 16px calc(20px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);
     flex-shrink: 0;
   }
@@ -1428,6 +1428,7 @@ const historyList    = $('#history-list');
 const historyCount   = $('#history-count');
 const homeInputEl    = $('#home-input');
 const homeInputForm  = $('#home-input-form');
+const homeInputWrap  = homeInputForm.closest('.home-input-wrap');
 const reviewRightEl  = $('#review-right');
 const reviewQuestionEl = $('#review-question-text');
 const reviewTagsEl   = $('#review-tags');
@@ -2520,10 +2521,30 @@ const imagCloseBtn = $('#imag-close');
 let imaginations     = [];   // cached list from API
 let imagCarouselIdx  = 0;
 let imagCarouselTimer = null;
-let imagCurrentFile  = null; // filename of selected imagination (null = answering deep question)
+let imagCurrentFile  = null;
 let imagPanelMode    = 'default'; // 'default' | 'list' | 'new'
+let imagToolbarH     = 0;         // cached toolbar height, measured once on open
+
+function measureAndApplyPosition() {
+  // Measure toolbar height while input bars are still visible
+  const ref  = homeInputWrap.offsetParent !== null ? homeInputWrap : chatInputWrap;
+  const rect = ref.getBoundingClientRect();
+  imagToolbarH = Math.max(0, window.innerHeight - rect.bottom);
+  applyImagPanelPosition();
+}
+
+function applyImagPanelPosition() {
+  // Use cached toolbar height; adjust panel height for keyboard via visualViewport
+  const vvH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  imagPanel.style.bottom    = imagToolbarH + 'px';
+  imagPanel.style.maxHeight = Math.floor((vvH - imagToolbarH) * 0.95) + 'px';
+}
 
 function openImagPanel() {
+  measureAndApplyPosition();           // measure toolbar BEFORE hiding inputs
+  homeInputWrap.style.display = 'none';
+  chatInputWrap.style.display = 'none';
+  window.visualViewport?.addEventListener('resize', applyImagPanelPosition);
   imagOverlay.classList.add('visible');
   imagPanel.classList.add('visible');
   document.body.style.overflow = 'hidden';
@@ -2535,8 +2556,13 @@ function openImagPanel() {
 }
 
 function closeImagPanel() {
+  window.visualViewport?.removeEventListener('resize', applyImagPanelPosition);
+  imagPanel.style.bottom    = '';
+  imagPanel.style.maxHeight = '';
   imagOverlay.classList.remove('visible');
   imagPanel.classList.remove('visible');
+  homeInputWrap.style.display = '';
+  chatInputWrap.style.display = '';
   document.body.style.overflow = '';
   clearImagCarousel();
 }
