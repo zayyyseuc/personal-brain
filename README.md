@@ -107,6 +107,25 @@ personal-brain/
 | GET | `/api/note` | Read any vault note by relative path |
 | POST | `/api/reindex` | Trigger a full re-index |
 
+## Importing from Claude (optional)
+
+If you want to import your [Claude.ai conversation history](https://support.anthropic.com/en/articles/8914208-how-do-i-export-my-claude-ai-data) into the vault, use the one-time migration script:
+
+1. Request a data export from Claude.ai and download the zip file.
+2. Add the path to your `.env`:
+
+```env
+CLAUDE_EXPORT_DIR=/absolute/path/to/extracted/export-folder
+```
+
+3. Run the import:
+
+```bash
+node src/import-claude.js
+```
+
+This reads `memories.json`, `conversations.json`, and any `projects/` from the export, writes them as Markdown notes into `<VAULT_PATH>/claude-import/`, then triggers a full re-index. The script is idempotent — safe to run again if you get a newer export.
+
 ## Notes
 
 - All data (conversations, reminders, cache) is stored locally — nothing leaves your machine except API calls to SiliconFlow.

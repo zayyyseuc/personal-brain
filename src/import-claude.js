@@ -7,7 +7,7 @@ require('dotenv').config();
 const fs   = require('fs');
 const path = require('path');
 
-const EXPORT_DIR = '/Users/chen/Downloads/data-727e5d7b-ef53-4f85-bdb4-45abdca14c5a-1778478333-9c09e1f8-batch-0000';
+const EXPORT_DIR = process.env.CLAUDE_EXPORT_DIR;
 const VAULT_DIR  = path.join(process.env.VAULT_PATH, 'claude-import');
 const CONV_DIR   = path.join(VAULT_DIR, 'conversations');
 
