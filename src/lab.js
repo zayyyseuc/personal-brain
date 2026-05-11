@@ -201,6 +201,31 @@ function listIdeas() {
             content,
           });
         } catch {}
+      } else if (entry.name.endsWith('.canvas')) {
+        try {
+          const raw  = fs.readFileSync(full, 'utf-8');
+          const data = JSON.parse(raw);
+          const title = entry.name.replace('.canvas', '');
+          const texts = (data.nodes || [])
+            .filter(n => n.type === 'text' && n.text)
+            .map(n => n.text.trim())
+            .filter(Boolean);
+          const preview = texts.join(' · ').slice(0, 140);
+          const stat = fs.statSync(full);
+          const created = stat.mtime.toISOString().slice(0, 10);
+          results.push({
+            id:      folder ? `${folder}/${entry.name}` : entry.name,
+            title,
+            preview,
+            folder:  folder || '',
+            type:    'canvas',
+            status:  'canvas',
+            created,
+            remind:  null,
+            discussionCount: 0,
+            content: '',
+          });
+        } catch {}
       }
     }
   })(root, '');

@@ -1123,6 +1123,7 @@
   .lab-status.s-incubating { background: #fff8e6; color: #b37700; }
   .lab-status.s-done       { background: #e6f7ef; color: #1a7a45; }
   .lab-status.s-shelved    { background: var(--bg-soft); color: var(--text-3); border: 1px solid var(--line); }
+  .lab-status.s-canvas     { background: #eef0fb; color: #4a52b3; }
   .lab-card-title {
     font-size: 13px;
     font-weight: 600;
@@ -2865,10 +2866,10 @@ modeToggleBtn.addEventListener('click', () => {
 const labGrid = $('#lab-grid');
 
 function labStatusLabel(s) {
-  return { incubating: 'Active', done: 'Done', shelved: 'Shelved' }[s] || s;
+  return { incubating: 'Active', done: 'Done', shelved: 'Shelved', canvas: 'Canvas' }[s] || s;
 }
 function labStatusClass(s) {
-  return { incubating: 's-incubating', done: 's-done', shelved: 's-shelved' }[s] || 's-incubating';
+  return { incubating: 's-incubating', done: 's-done', shelved: 's-shelved', canvas: 's-canvas' }[s] || 's-incubating';
 }
 function formatLabDate(str) {
   if (!str) return '';
@@ -2929,8 +2930,8 @@ async function renderLab() {
             ${escapeHtml(formatLabDate(item.created))}${item.discussionCount ? ` · ${item.discussionCount}条` : ''}
           </span>
           <div class="lab-card-actions">
-            ${item.status !== 'done'    ? `<button class="lab-action done-btn"  data-id="${escapeHtml(item.id)}">完成</button>` : ''}
-            ${item.status !== 'shelved' ? `<button class="lab-action shelf-btn" data-id="${escapeHtml(item.id)}">搁置</button>` : ''}
+            ${item.type !== 'canvas' && item.status !== 'done'    ? `<button class="lab-action done-btn"  data-id="${escapeHtml(item.id)}">完成</button>` : ''}
+            ${item.type !== 'canvas' && item.status !== 'shelved' ? `<button class="lab-action shelf-btn" data-id="${escapeHtml(item.id)}">搁置</button>` : ''}
           </div>
         </div>`;
 
@@ -2975,8 +2976,14 @@ function openLabDrawer(item) {
     `<span style="display:inline-block;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-right:6px;" class="lab-status ${labStatusClass(item.status)}">${labStatusLabel(item.status)}</span>` +
     `${item.created || ''}` +
     (item.discussionCount ? ` · ${item.discussionCount} note${item.discussionCount > 1 ? 's' : ''}` : '');
-  drawerBody.innerHTML = window.marked ? marked.parse(item.content) : escapeHtml(item.content);
-  drawerChatBtn.style.display = '';
+  if (item.type === 'canvas') {
+    drawerBody.innerHTML = item.preview
+      ? `<p style="color:var(--text-2);font-size:13px;line-height:1.7;">${escapeHtml(item.preview)}</p>`
+      : `<p style="color:var(--text-3);font-size:13px;">（Canvas 图表，请在 Obsidian 中查看）</p>`;
+  } else {
+    drawerBody.innerHTML = window.marked ? marked.parse(item.content) : escapeHtml(item.content);
+  }
+  drawerChatBtn.style.display = item.type === 'canvas' ? 'none' : '';
   drawer.classList.add('open');
   drawerMask.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
