@@ -16,7 +16,7 @@ async function search(question) {
   });
   const queryVector = res.data[0].embedding;
   const results = await index.queryItems(queryVector, 5);
-  return results;
+  return results.slice(0, 5);
 }
 
 async function askStream(question, history = []) {

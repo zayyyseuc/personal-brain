@@ -1977,7 +1977,6 @@ function startNewConversation(initialText) {
 function persistConversation() {
   const SPECIAL = ['…', '__remind-picker__', '__note-saved__', '__note-modified__'];
   if (!state.conversation.messages.some(m => m.role === 'ai' && !SPECIAL.includes(m.content))) return;
-  // Fire-and-forget — don't block the UI
   fetch(`${API_BASE}/api/conversations`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1986,6 +1985,8 @@ function persistConversation() {
       title:    state.conversation.title,
       messages: state.conversation.messages,
     }),
+  }).then(() => {
+    if (state.page === 'home') renderHistory();
   }).catch(console.error);
 }
 
