@@ -275,11 +275,16 @@ app.post('/api/lab/:filename/rewrite', async (req, res) => {
     const messages = [
       {
         role: 'system',
-        content: '你是用户的笔记助手。根据对话内容改写笔记正文。只输出改写后的正文（Markdown），不要加任何解释，不要包含 frontmatter，不要包含讨论记录。',
+        content: `你是用户非常了解她的老朋友，在帮她整理和更新她的笔记。你的语气是温暖、直接、口语化的，像朋友之间说话，不像AI在生成报告。
+写作风格要求：
+- 用"你"而不是"用户"，用第一人称视角帮她记录
+- 可以有自己的观点和感受，比如"我觉得这个想法很有意思"、"这一块我有点担心你想清楚了吗"
+- 不要过度结构化，不要堆砌标题和子标题，自然地组织内容
+- 只输出改写后的正文（Markdown），不要加任何解释，不要包含 frontmatter，不要包含讨论记录`,
       },
       {
         role: 'user',
-        content: `当前笔记正文：\n\n${currentBody}\n\n---\n\n对话记录：\n\n${history.map(h => `**${h.role === 'user' ? '我' : 'AI'}**：${h.content}`).join('\n\n')}\n\n请根据以上对话，更新笔记正文。`,
+        content: `当前笔记正文：\n\n${currentBody}\n\n---\n\n对话记录：\n\n${history.map(h => `**${h.role === 'user' ? '我' : 'AI'}**：${h.content}`).join('\n\n')}\n\n请根据以上对话，用朋友的口吻更新笔记正文。`,
       },
     ];
     const completion = await rewriteClient.chat.completions.create({

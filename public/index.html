@@ -785,6 +785,12 @@
     transition: background 0.25s ease, border-color 0.25s ease;
   }
   .chat-input-wrap.capture .chat-input { background: #fff; border-color: #d6dcef; }
+  .chat-input-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
   .chat-input textarea {
     flex: 1;
     background: transparent;
@@ -1473,8 +1479,10 @@
 
     <div class="chat-input-wrap" id="chat-input-wrap">
       <div class="chat-input">
-        <div id="quote-block" style="display:none"></div>
-        <textarea id="chat-input" rows="1" placeholder="问点什么..."></textarea>
+        <div class="chat-input-main">
+          <div id="quote-block" style="display:none"></div>
+          <textarea id="chat-input" rows="1" placeholder="问点什么..."></textarea>
+        </div>
         <div class="input-actions">
           <button class="icon-btn capture-toggle" id="capture-toggle" aria-label="切换捕获模式">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
@@ -2233,6 +2241,24 @@ function buildNoteModifiedNode(m) {
   return wrap;
 }
 
+async function autoCaptureToLab(content) {
+  try {
+    const r = await fetch(`${API_BASE}/api/capture`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+    const data = await r.json();
+    if (data.id) {
+      state.conversation.labFileId = data.id;
+      const msg = { role: 'ai', content: '__note-saved__', _filename: data.id };
+      state.conversation.messages.push(msg);
+      renderMessages();
+      persistConversation();
+    }
+  } catch { showToast('存入失败，请重试'); }
+}
+
 async function autoSaveToNote(filename, question, answer) {
   try {
     const r = await fetch(`${API_BASE}/api/lab/${encodeURIComponent(filename)}/discuss`, {
@@ -2547,6 +2573,8 @@ async function sendMessage(text) {
             } else if (hasSaveIntent(content)) {
               autoSaveToNote(labFile, content, rawText);
             }
+          } else if (hasSaveIntent(content)) {
+            autoCaptureToLab(rawText);
           }
         } else if (json.type === 'error') {
           aiMsg.content = `出错了：${json.message || '未知错误'}`;
