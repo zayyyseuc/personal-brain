@@ -5,7 +5,7 @@ const fs      = require('fs');
 const { askStream }                        = require('./searcher');
 const { indexAll }                         = require('./indexer');
 const { startWatcher }                     = require('./watcher');
-const { createIdea, appendDiscussion, removeDiscussion, listIdeas, getBody, replaceBody } = require('./lab');
+const { createIdea, appendDiscussion, removeDiscussion, listIdeas, getBody, replaceBody, listFolders, createFolder, moveNote, deleteNote } = require('./lab');
 const OpenAI = require('openai');
 const rewriteClient = new OpenAI({ apiKey: process.env.SILICONFLOW_API_KEY, baseURL: 'https://api.siliconflow.cn/v1' });
 const { add: addReminder, listDue, update: updateReminder, remove: removeReminder } = require('./reminders');
@@ -193,6 +193,36 @@ app.get('/api/conversations/:id', (req, res) => {
   const data = getConv(req.params.id);
   if (!data) return res.status(404).json({ error: '对话不存在' });
   res.json(data);
+});
+
+// Lab 文件夹列表
+app.get('/api/lab-folders', (req, res) => {
+  try { res.json(listFolders()); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// 新建 lab 文件夹
+app.post('/api/lab-folders', (req, res) => {
+  const { name } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: '文件夹名不能为空' });
+  try { res.json(createFolder(name)); }
+  catch (err) { res.status(err.status || 500).json({ error: err.message }); }
+});
+
+// 移动 lab 笔记到指定文件夹（folder 为空字符串 = 移回根目录）
+app.patch('/api/lab/:filename/move', (req, res) => {
+  const filename = decodeURIComponent(req.params.filename);
+  const { folder } = req.body;
+  if (folder === undefined) return res.status(400).json({ error: '缺少 folder 参数' });
+  try { res.json(moveNote(filename, folder)); }
+  catch (err) { res.status(err.status || 500).json({ error: err.message }); }
+});
+
+// 删除 lab 笔记
+app.delete('/api/lab/:filename', (req, res) => {
+  const filename = decodeURIComponent(req.params.filename);
+  try { deleteNote(filename); res.json({ ok: true }); }
+  catch (err) { res.status(err.status || 500).json({ error: err.message }); }
 });
 
 // 向 lab 笔记追加讨论记录，或删除指定条目

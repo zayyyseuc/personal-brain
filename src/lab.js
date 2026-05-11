@@ -254,4 +254,39 @@ function replaceBody(filename, newBody) {
   fs.writeFileSync(fp, stringifyFrontmatter(meta, newBody.trim() + discuss), 'utf-8');
 }
 
-module.exports = { createIdea, appendDiscussion, removeDiscussion, listIdeas, getBody, replaceBody };
+function listFolders() {
+  ensureLabDir();
+  return fs.readdirSync(labDir(), { withFileTypes: true })
+    .filter(e => e.isDirectory())
+    .map(e => e.name)
+    .sort();
+}
+
+function createFolder(name) {
+  const clean = name.trim().replace(/[\/\\:*?"<>|]/g, '').slice(0, 50);
+  if (!clean) { const e = new Error('文件夹名不合法'); e.status = 400; throw e; }
+  const fp = safeLabPath(clean);
+  if (!fs.existsSync(fp)) fs.mkdirSync(fp, { recursive: true });
+  return { name: clean };
+}
+
+function moveNote(filename, targetFolder) {
+  const srcPath = safeLabPath(filename);
+  if (!fs.existsSync(srcPath)) { const e = new Error('文件不存在'); e.status = 404; throw e; }
+  const basename = path.basename(filename);
+  const destRel  = targetFolder ? `${targetFolder}/${basename}` : basename;
+  const destPath = safeLabPath(destRel);
+  if (srcPath === destPath) return { id: destRel };
+  const destDir = path.dirname(destPath);
+  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+  fs.renameSync(srcPath, destPath);
+  return { id: destRel };
+}
+
+function deleteNote(filename) {
+  const fp = safeLabPath(filename);
+  if (!fs.existsSync(fp)) { const e = new Error('文件不存在'); e.status = 404; throw e; }
+  fs.unlinkSync(fp);
+}
+
+module.exports = { createIdea, appendDiscussion, removeDiscussion, listIdeas, getBody, replaceBody, listFolders, createFolder, moveNote, deleteNote };

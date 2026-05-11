@@ -1170,6 +1170,149 @@
   .lab-action.shelf-btn:hover { color: var(--text-2); background: var(--bg-soft); }
   .lab-card.is-shelved { opacity: 0.42; }
 
+  /* ---------- Lab selection mode ---------- */
+  .lab-card.selectable { cursor: default; }
+  .lab-card.selected {
+    outline: 2px solid var(--primary);
+    background: var(--primary-soft);
+  }
+  .lab-card-check {
+    display: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--text-3);
+    flex-shrink: 0;
+    margin-bottom: 6px;
+    align-self: flex-end;
+    transition: all 0.15s ease;
+  }
+  .lab-select-mode .lab-card-check { display: block; }
+  .lab-card.selected .lab-card-check {
+    border-color: var(--primary);
+    background: var(--primary);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-size: 11px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .lab-select-bar {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 16px 12px;
+    pointer-events: auto;
+  }
+  .lab-select-bar.active { display: flex; }
+  .lab-select-top {
+    display: flex;
+    align-items: center;
+  }
+  .lab-select-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-3);
+  }
+  .lab-select-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .lab-sel-btn {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 4px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .lab-sel-btn:disabled { opacity: 0.4; pointer-events: none; }
+  .lab-sel-btn.del { color: #c0392b; border-color: #f5c6c2; background: #fff5f5; }
+  .lab-sel-btn.del.confirming { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+  /* ---------- Folder picker modal ---------- */
+  .folder-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: flex-end;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .folder-overlay.open { opacity: 1; pointer-events: all; }
+  .folder-sheet {
+    width: 100%;
+    background: var(--bg);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 16px 0 32px;
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+  }
+  .folder-overlay.open .folder-sheet { transform: translateY(0); }
+  .folder-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .folder-sheet-close {
+    font-size: 20px;
+    color: var(--text-3);
+    line-height: 1;
+    padding: 2px 4px;
+  }
+  .folder-list { max-height: 280px; overflow-y: auto; }
+  .folder-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 20px;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.1s ease;
+  }
+  .folder-item:active { background: var(--bg-soft); }
+  .folder-item-icon { font-size: 16px; }
+  .folder-new-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px 0;
+    border-top: 1px solid var(--line);
+    margin-top: 4px;
+  }
+  .folder-new-input {
+    flex: 1;
+    font-size: 13px;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-soft);
+    outline: none;
+  }
+  .folder-new-input:focus { border-color: var(--primary); }
+  .folder-new-confirm {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
   /* ---------- Drawer chat button ---------- */
   .drawer-chat-btn {
     display: inline-flex;
@@ -1290,6 +1433,18 @@
 
     <!-- Bottom input -->
     <div class="home-input-wrap">
+      <!-- Selection action bar (shown in select mode) -->
+      <div class="lab-select-bar" id="lab-select-bar">
+        <div class="lab-select-top">
+          <span class="lab-select-count" id="lab-select-count">已选 0 条</span>
+        </div>
+        <div class="lab-select-actions">
+          <button class="lab-sel-btn" id="lab-moveout-btn">移出文件夹</button>
+          <button class="lab-sel-btn" id="lab-movein-btn">移入文件夹</button>
+          <button class="lab-sel-btn" id="lab-select-cancel">取消</button>
+          <button class="lab-sel-btn del" id="lab-delete-btn">删除</button>
+        </div>
+      </div>
       <form class="home-input" id="home-input-form">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a8a93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input id="home-input" type="text" placeholder="问点什么，或记录一个想法…" autocomplete="off" />
@@ -1362,6 +1517,21 @@
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
+
+  <!-- Folder picker modal -->
+  <div class="folder-overlay" id="folder-overlay">
+    <div class="folder-sheet">
+      <div class="folder-sheet-header">
+        <span id="folder-sheet-title">移入文件夹</span>
+        <button class="folder-sheet-close" id="folder-sheet-close">×</button>
+      </div>
+      <div class="folder-list" id="folder-list"></div>
+      <div class="folder-new-row">
+        <input class="folder-new-input" id="folder-new-input" type="text" placeholder="新建文件夹…" maxlength="30" />
+        <button class="folder-new-confirm" id="folder-new-confirm">创建并移入</button>
+      </div>
+    </div>
+  </div>
 
 </div>
 <script>
@@ -2877,6 +3047,143 @@ function formatLabDate(str) {
   return `${+m}/${+d}`;
 }
 
+/* ---- Selection mode state ---- */
+let selectMode = false;
+const selectedIds = new Set();
+let longPressTimer = null;
+let deleteConfirmTimer = null;
+
+const labSelectBar    = $('#lab-select-bar');
+const labSelectCount  = $('#lab-select-count');
+const labSelectCancel = $('#lab-select-cancel');
+const labMoveOutBtn   = $('#lab-moveout-btn');
+const labMoveInBtn    = $('#lab-movein-btn');
+const labDeleteBtn    = $('#lab-delete-btn');
+const folderOverlay   = $('#folder-overlay');
+const folderList      = $('#folder-list');
+const folderNewInput  = $('#folder-new-input');
+const folderNewConfirm = $('#folder-new-confirm');
+const folderSheetClose = $('#folder-sheet-close');
+
+function enterSelectMode(firstId) {
+  selectMode = true;
+  selectedIds.clear();
+  if (firstId) selectedIds.add(firstId);
+  labGrid.classList.add('lab-select-mode');
+  labSelectBar.classList.add('active');
+  homeInputForm.style.display = 'none';
+  updateSelectionUI();
+}
+
+function exitSelectMode() {
+  selectMode = false;
+  selectedIds.clear();
+  labGrid.classList.remove('lab-select-mode');
+  labSelectBar.classList.remove('active');
+  homeInputForm.style.display = '';
+  labGrid.querySelectorAll('.lab-card.selected').forEach(c => c.classList.remove('selected'));
+  clearTimeout(deleteConfirmTimer);
+  labDeleteBtn.classList.remove('confirming');
+  labDeleteBtn.textContent = '删除';
+}
+
+function updateSelectionUI() {
+  const n = selectedIds.size;
+  labSelectCount.textContent = `已选 ${n} 条`;
+  labGrid.querySelectorAll('.lab-card').forEach(card => {
+    card.classList.toggle('selected', selectedIds.has(card.dataset.id));
+  });
+  labMoveOutBtn.disabled = n === 0;
+  labMoveInBtn.disabled  = n === 0;
+  labDeleteBtn.disabled  = n === 0;
+}
+
+labSelectCancel.addEventListener('click', exitSelectMode);
+
+labMoveOutBtn.addEventListener('click', async () => {
+  if (!selectedIds.size) return;
+  labMoveOutBtn.disabled = true; labMoveOutBtn.textContent = '…';
+  for (const id of [...selectedIds]) {
+    await fetch(`${API_BASE}/api/lab/${encodeURIComponent(id)}/move`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: '' }),
+    });
+  }
+  exitSelectMode(); renderLab();
+});
+
+labMoveInBtn.addEventListener('click', () => { if (selectedIds.size) openFolderPicker(); });
+
+labDeleteBtn.addEventListener('click', () => {
+  if (!selectedIds.size) return;
+  if (!labDeleteBtn.classList.contains('confirming')) {
+    labDeleteBtn.classList.add('confirming');
+    labDeleteBtn.textContent = '确认删除';
+    deleteConfirmTimer = setTimeout(() => {
+      labDeleteBtn.classList.remove('confirming');
+      labDeleteBtn.textContent = '删除';
+    }, 3000);
+  } else {
+    clearTimeout(deleteConfirmTimer);
+    (async () => {
+      for (const id of [...selectedIds]) {
+        await fetch(`${API_BASE}/api/lab/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      }
+      exitSelectMode(); renderLab();
+    })();
+  }
+});
+
+/* ---- Folder picker ---- */
+async function openFolderPicker() {
+  folderNewInput.value = '';
+  folderList.innerHTML = '<div style="padding:12px 20px;font-size:13px;color:var(--text-3);">加载中…</div>';
+  folderOverlay.classList.add('open');
+  let folders = [];
+  try { const r = await fetch(`${API_BASE}/api/lab-folders`); folders = await r.json(); } catch {}
+  folderList.innerHTML = '';
+  if (folders.length === 0) {
+    folderList.innerHTML = '<div style="padding:12px 20px;font-size:13px;color:var(--text-3);">暂无文件夹，在下方新建</div>';
+  } else {
+    folders.forEach(name => {
+      const el = document.createElement('div');
+      el.className = 'folder-item';
+      el.innerHTML = `<span class="folder-item-icon">📁</span><span>${escapeHtml(name)}</span>`;
+      el.addEventListener('click', () => moveSelectedToFolder(name));
+      folderList.appendChild(el);
+    });
+  }
+}
+
+function closeFolderPicker() { folderOverlay.classList.remove('open'); }
+folderSheetClose.addEventListener('click', closeFolderPicker);
+folderOverlay.addEventListener('click', e => { if (e.target === folderOverlay) closeFolderPicker(); });
+
+async function moveSelectedToFolder(folder) {
+  for (const id of [...selectedIds]) {
+    await fetch(`${API_BASE}/api/lab/${encodeURIComponent(id)}/move`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder }),
+    });
+  }
+  closeFolderPicker(); exitSelectMode(); renderLab();
+}
+
+folderNewConfirm.addEventListener('click', async () => {
+  const name = folderNewInput.value.trim();
+  if (!name) return;
+  folderNewConfirm.textContent = '…'; folderNewConfirm.disabled = true;
+  try {
+    await fetch(`${API_BASE}/api/lab-folders`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    await moveSelectedToFolder(name);
+  } catch { showToast('操作失败'); }
+  finally { folderNewConfirm.textContent = '创建并移入'; folderNewConfirm.disabled = false; }
+});
+
+/* ---- renderLab ---- */
 async function renderLab() {
   labGrid.innerHTML = `<div style="font-size:13px;color:var(--text-3);padding:20px 4px;">加载中…</div>`;
   let ideas = [];
@@ -2892,36 +3199,31 @@ async function renderLab() {
     return;
   }
 
-  // Group: '' = root, otherwise folder name
   const groups = {};
   ideas.forEach(item => {
     const key = item.folder || '';
     if (!groups[key]) groups[key] = [];
     groups[key].push(item);
   });
-  // Root first, then folders alphabetically
   const keys = ['', ...Object.keys(groups).filter(k => k).sort()];
 
   labGrid.innerHTML = '';
-  const allItems = []; // flat ordered list for click-index lookup
 
   keys.forEach(key => {
     const group = groups[key];
     if (!group) return;
-
     if (key) {
       const hdr = document.createElement('div');
       hdr.className = 'lab-section-header';
-      hdr.textContent = key.split('/').pop(); // show only deepest folder name
+      hdr.textContent = key.split('/').pop();
       labGrid.appendChild(hdr);
     }
-
     group.forEach(item => {
-      allItems.push(item);
       const card = document.createElement('div');
       card.className = `lab-card${item.status === 'shelved' ? ' is-shelved' : ''}`;
       card.dataset.id = item.id;
       card.innerHTML = `
+        <div class="lab-card-check"></div>
         <span class="lab-status ${escapeHtml(labStatusClass(item.status))}">${escapeHtml(labStatusLabel(item.status))}</span>
         <div class="lab-card-title">${escapeHtml(item.title)}</div>
         ${item.preview ? `<div class="lab-card-preview">${escapeHtml(item.preview)}</div>` : ''}
@@ -2935,10 +3237,31 @@ async function renderLab() {
           </div>
         </div>`;
 
+      // Click: select mode toggle or open drawer
       card.addEventListener('click', e => {
         if (e.target.closest('.lab-action')) return;
+        if (selectMode) { selectedIds.has(item.id) ? selectedIds.delete(item.id) : selectedIds.add(item.id); updateSelectionUI(); return; }
         openLabDrawer(item);
       });
+
+      // Long press detection
+      let lpStartX, lpStartY;
+      card.addEventListener('touchstart', e => {
+        lpStartX = e.touches[0].clientX; lpStartY = e.touches[0].clientY;
+        longPressTimer = setTimeout(() => {
+          longPressTimer = null;
+          if (!selectMode) enterSelectMode(item.id);
+          else { selectedIds.has(item.id) ? selectedIds.delete(item.id) : selectedIds.add(item.id); updateSelectionUI(); }
+        }, 500);
+      }, { passive: true });
+      card.addEventListener('touchmove', e => {
+        if (!longPressTimer) return;
+        if (Math.abs(e.touches[0].clientX - lpStartX) > 8 || Math.abs(e.touches[0].clientY - lpStartY) > 8) {
+          clearTimeout(longPressTimer); longPressTimer = null;
+        }
+      }, { passive: true });
+      card.addEventListener('touchend', () => { clearTimeout(longPressTimer); longPressTimer = null; });
+
       card.querySelector('.done-btn')?.addEventListener('click', async e => {
         e.stopPropagation();
         e.target.textContent = '…'; e.target.disabled = true;
