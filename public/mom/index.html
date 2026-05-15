@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Zia 的小窗</title>
+  <link rel="manifest" href="/mom/manifest.json">
+  <meta name="theme-color" content="#c4714a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Zia">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      background: #f0ece8;
+      color: #3d2b1f;
+      min-height: 100vh;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* ── header ── */
+    .header {
+      background: #c4714a;
+      color: white;
+      padding: 16px 20px;
+      padding-top: calc(16px + env(safe-area-inset-top, 0px));
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+    .header-time { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .refresh-btn, .debug-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      font-size: 16px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .refresh-btn:active, .debug-btn:active { background: rgba(255,255,255,0.35); }
+
+    /* ── cards ── */
+    .section { padding: 12px 16px 0; }
+
+    .card {
+      background: #fffaf7;
+      border-radius: 14px;
+      padding: 14px 16px;
+      border: 1px solid rgba(196, 113, 74, 0.12);
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #c4714a;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+    }
+
+    /* ── status ── */
+    .status-text {
+      font-size: 17px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: #3d2b1f;
+    }
+    .status-empty { color: #bba898; font-weight: 400; }
+    .status-meta { font-size: 12px; color: #b09080; margin-top: 6px; }
+
+    /* ── heatmap ── */
+    .heatmap {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+    }
+    .hm-cell {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: #e8d8cc;
+    }
+    .hm-cell[data-level="1"] { background: #f4c4a4; }
+    .hm-cell[data-level="2"] { background: #e09868; }
+    .hm-cell[data-level="3"] { background: #c4714a; }
+    .hm-label {
+      font-size: 11px;
+      color: #b09080;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ── notes ── */
+    .note-item { padding: 10px 0; border-bottom: 1px solid #f0e0d4; }
+    .note-item:first-child { padding-top: 0; }
+    .note-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .note-title { font-size: 15px; font-weight: 500; color: #3d2b1f; }
+    .note-excerpt { font-size: 13px; color: #8b6355; margin-top: 3px; line-height: 1.5; }
+    .note-meta { font-size: 11px; color: #b09080; margin-top: 4px; }
+
+    /* ── milestones ── */
+    .milestone-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0e0d4;
+    }
+    .milestone-item:first-child { padding-top: 0; }
+    .milestone-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .milestone-name { font-size: 15px; color: #3d2b1f; }
+    .milestone-count { text-align: right; }
+    .milestone-days { font-size: 22px; font-weight: 700; color: #c4714a; line-height: 1; }
+    .milestone-past .milestone-days { color: #b09080; }
+    .milestone-unit { font-size: 11px; color: #b09080; margin-top: 2px; }
+
+    /* ── empty / loading ── */
+    .empty { font-size: 14px; color: #c4a898; padding: 4px 0; }
+    .error-text { font-size: 13px; color: #c0392b; padding: 4px 0; }
+
+    /* ── token meta under ai msg ── */
+    .msg-meta { font-size: 11px; color: #b09080; align-self: flex-start; padding: 0 4px; margin-top: -6px; }
+
+    /* ── history conv list ── */
+    .conv-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0e0d4;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .conv-item:first-child { padding-top: 0; }
+    .conv-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .conv-item:active { opacity: 0.7; }
+    .conv-preview { font-size: 14px; color: #3d2b1f; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-date { font-size: 11px; color: #b09080; flex-shrink: 0; margin-left: 10px; }
+
+    /* ── history separator in chat ── */
+    .msg-separator {
+      align-self: center;
+      font-size: 11px;
+      color: #b09080;
+      background: #f0e4dc;
+      border-radius: 10px;
+      padding: 3px 12px;
+      margin: 4px 0;
+    }
+    /* dim old messages loaded from history */
+    .msg-history { opacity: 0.65; }
+
+    /* ── debug panel ── */
+    .debug-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 300;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .debug-panel.open { display: block; }
+    .debug-content {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      border-radius: 12px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .debug-close {
+      position: sticky;
+      top: 0;
+      float: right;
+      background: #c4714a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    /* ── chat button ── */
+    .chat-fab {
+      position: fixed;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      background: #c4714a;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 32px;
+      font-size: 16px;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(196, 113, 74, 0.45);
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+    }
+    .chat-fab:active { transform: translateX(-50%) scale(0.97); }
+
+    /* ── chat overlay ── */
+    .chat-overlay {
+      position: fixed;
+      inset: 0;
+      background: #faf7f4;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 200;
+    }
+    .chat-overlay.open { transform: translateY(0); }
+
+    .chat-header {
+      background: #c4714a;
+      color: white;
+      padding: 14px 20px;
+      padding-top: calc(14px + env(safe-area-inset-top, 0px));
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+    .chat-back {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+    .chat-header h2 { font-size: 18px; font-weight: 600; }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .msg-user {
+      align-self: flex-end;
+      background: #c4714a;
+      color: white;
+      border-bottom-right-radius: 5px;
+    }
+    .msg-ai {
+      align-self: flex-start;
+      background: white;
+      color: #3d2b1f;
+      border: 1px solid #e8d5c8;
+      border-bottom-left-radius: 5px;
+    }
+    .msg-typing { opacity: 0.6; }
+
+    .chat-footer {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      background: white;
+      border-top: 1px solid #f0e0d4;
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      border: 1.5px solid #e8d5c8;
+      border-radius: 22px;
+      padding: 10px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #faf7f4;
+      color: #3d2b1f;
+      outline: none;
+    }
+    .chat-input:focus { border-color: #c4714a; }
+    .chat-send {
+      background: #c4714a;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chat-send:disabled { opacity: 0.45; cursor: default; }
+    .chat-send:not(:disabled):active { transform: scale(0.94); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Zia 的小窗</h1>
+    <div class="header-time" id="refresh-time">加载中…</div>
+  </div>
+  <div class="header-actions">
+    <button class="debug-btn" onclick="openDebug()" title="诊断">⚙</button>
+    <button class="refresh-btn" onclick="loadAll()" title="刷新">↻</button>
+  </div>
+</div>
+
+<!-- 调试面板 -->
+<div id="debug-panel" class="debug-panel">
+  <button class="debug-close" onclick="closeDebug()">关闭</button>
+  <div id="debug-content" class="debug-content">加载中…</div>
+</div>
+
+<!-- 状态 -->
+<div class="section">
+  <div class="card">
+    <div class="card-title">Zia 现在</div>
+    <div id="status-text" class="status-text status-empty">加载中…</div>
+    <div id="status-meta" class="status-meta"></div>
+  </div>
+</div>
+
+<!-- 热力图 -->
+<div class="section">
+  <div class="card">
+    <div class="card-title">最近 30 天活跃度</div>
+    <div id="heatmap" class="heatmap"></div>
+    <div class="hm-label">
+      <span>30 天前</span>
+      <span>今天</span>
+    </div>
+  </div>
+</div>
+
+<!-- 最近分享 -->
+<div class="section">
+  <div class="card">
+    <div class="card-title">Zia 分享的想法</div>
+    <div id="notes-list"><div class="empty">加载中…</div></div>
+  </div>
+</div>
+
+<!-- 倒计时 -->
+<div class="section" id="milestones-section">
+  <div class="card">
+    <div class="card-title">大事倒计时</div>
+    <div id="milestones-list"><div class="empty">加载中…</div></div>
+  </div>
+</div>
+
+<!-- 历史对话 -->
+<div class="section" id="history-section" style="display:none">
+  <div class="card">
+    <div class="card-title">历史对话</div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- 聊天按钮 -->
+<button class="chat-fab" onclick="openChat()">问问 Zia 在忙啥 →</button>
+
+<!-- 聊天界面（新对话 / 续聊历史） -->
+<div id="chat-overlay" class="chat-overlay">
+  <div class="chat-header">
+    <button class="chat-back" onclick="closeChat()">‹</button>
+    <h2>问问 Zia</h2>
+    <span id="chat-context-label" style="font-size:12px;opacity:0.8;margin-left:auto"></span>
+  </div>
+  <div id="chat-messages" class="chat-messages">
+    <div class="msg msg-ai">妈妈好！有什么想了解 Zia 近况的，尽管问我。</div>
+  </div>
+  <div class="chat-footer">
+    <input id="chat-input" class="chat-input" type="text" placeholder="问点什么…" maxlength="200">
+    <button id="chat-send" class="chat-send" onclick="sendMsg()">↑</button>
+  </div>
+</div>
+
+
+<script>
+  // ── 工具 ──────────────────────────────────────────────────────────────────
+
+  function esc(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function ago(iso) {
+    if (!iso) return '';
+    const s = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (s < 60) return '刚刚';
+    if (s < 3600) return `${Math.floor(s / 60)} 分钟前`;
+    if (s < 86400) return `${Math.floor(s / 3600)} 小时前`;
+    const days = Math.floor(s / 86400);
+    return days < 30 ? `${days} 天前` : new Date(iso).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+  }
+
+  // ── 数据加载 ──────────────────────────────────────────────────────────────
+
+  async function loadStatus() {
+    const textEl = document.getElementById('status-text');
+    const metaEl = document.getElementById('status-meta');
+    try {
+      const r = await fetch('/api/mom-status');
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      if (d.text) {
+        textEl.textContent = d.text;
+        textEl.className = 'status-text';
+        metaEl.textContent = `更新于 ${ago(d.updatedAt)}`;
+      } else {
+        textEl.textContent = '还没有最新消息，等 Zia 来更新';
+        textEl.className = 'status-text status-empty';
+        metaEl.textContent = '';
+      }
+    } catch(e) {
+      textEl.textContent = '加载失败，请点刷新';
+      textEl.className = 'status-text status-empty';
+      metaEl.textContent = e.message;
+      metaEl.style.color = '#c0392b';
+    }
+  }
+
+  async function loadActivity() {
+    try {
+      const data = await fetch('/api/mom-activity').then(r => r.json());
+      const entries = Object.entries(data);
+      const max = Math.max(...entries.map(([, v]) => v), 1);
+      const hm = document.getElementById('heatmap');
+      hm.innerHTML = '';
+      for (const [date, count] of entries) {
+        const cell = document.createElement('div');
+        cell.className = 'hm-cell';
+        cell.title = `${date.slice(5).replace('-', '月') + '日'}  活跃 ${count} 次`;
+        const level = count === 0 ? 0 : count < max * 0.33 ? 1 : count < max * 0.67 ? 2 : 3;
+        if (level > 0) cell.dataset.level = level;
+        hm.appendChild(cell);
+      }
+    } catch {}
+  }
+
+  async function loadNotes() {
+    const el = document.getElementById('notes-list');
+    try {
+      const r = await fetch('/api/mom-notes');
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const notes = await r.json();
+      if (notes.error) throw new Error(notes.error);
+      if (!Array.isArray(notes) || !notes.length) { el.innerHTML = '<div class="empty">Zia 还没分享笔记</div>'; return; }
+      el.innerHTML = notes.map(n => `
+        <div class="note-item">
+          <div class="note-title">${esc(n.title)}</div>
+          ${n.excerpt ? `<div class="note-excerpt">${esc(n.excerpt)}…</div>` : ''}
+          <div class="note-meta">${ago(n.updatedAt)}</div>
+        </div>
+      `).join('');
+    } catch(e) { el.innerHTML = `<div class="error-text">加载失败：${esc(e.message)}</div>`; }
+  }
+
+  async function loadMilestones() {
+    const el = document.getElementById('milestones-list');
+    const sec = document.getElementById('milestones-section');
+    try {
+      const ms = await fetch('/api/mom-milestones').then(r => r.json());
+      if (!ms.length) { sec.style.display = 'none'; return; }
+      el.innerHTML = ms.map(m => {
+        const past = m.daysLeft < 0;
+        return `
+          <div class="milestone-item ${past ? 'milestone-past' : ''}">
+            <div class="milestone-name">${esc(m.label)}</div>
+            <div class="milestone-count">
+              <div class="milestone-days">${past ? '+' : ''}${Math.abs(m.daysLeft)}</div>
+              <div class="milestone-unit">${past ? '天前已过' : '天后'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch { sec.style.display = 'none'; }
+  }
+
+  async function loadAll() {
+    await Promise.all([loadStatus(), loadActivity(), loadNotes(), loadMilestones()]);
+    const now = new Date();
+    document.getElementById('refresh-time').textContent =
+      `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} 更新`;
+  }
+
+  loadAll();
+  renderHistory();
+
+  // ── 对话历史（localStorage）──────────────────────────────────────────────
+
+  const CONV_KEY = 'mom_chat_history';
+  const MAX_CONVS = 20;
+
+  function loadConvs() {
+    try { return JSON.parse(localStorage.getItem(CONV_KEY) || '[]'); } catch { return []; }
+  }
+
+  function saveConvs(list) {
+    localStorage.setItem(CONV_KEY, JSON.stringify(list.slice(0, MAX_CONVS)));
+  }
+
+  function renderHistory() {
+    const sec = document.getElementById('history-section');
+    const list = document.getElementById('history-list');
+    const convs = loadConvs();
+    if (!convs.length) { sec.style.display = 'none'; return; }
+    sec.style.display = '';
+    list.innerHTML = convs.slice(0, 5).map(c => `
+      <div class="conv-item" onclick="continueConv('${c.id}')">
+        <span class="conv-preview">${esc(c.preview || '对话')}</span>
+        <span class="conv-date">${ago(c.startedAt)}</span>
+      </div>
+    `).join('');
+  }
+
+  // ── 聊天 ─────────────────────────────────────────────────────────────────
+
+  let chatHistory = [];
+  let streaming = false;
+  let currentSession = null;
+
+  function openChat() {
+    chatHistory = [];
+    currentSession = { id: Date.now().toString(), startedAt: new Date().toISOString(), preview: '', messages: [] };
+
+    document.getElementById('chat-messages').innerHTML =
+      '<div class="msg msg-ai">妈妈好！有什么想了解 Zia 近况的，尽管问我。</div>';
+    document.getElementById('chat-context-label').textContent = '';
+
+    document.getElementById('chat-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('chat-input').focus(), 350);
+  }
+
+  function continueConv(id) {
+    const convs = loadConvs();
+    const conv = convs.find(c => c.id === id);
+    if (!conv) return;
+
+    // 把历史消息装进聊天界面
+    chatHistory = conv.messages.slice();
+    // 续聊时新建 session，把旧消息作为初始 history
+    currentSession = { id: Date.now().toString(), startedAt: new Date().toISOString(), preview: conv.preview, messages: chatHistory.slice() };
+
+    const msgsEl = document.getElementById('chat-messages');
+    msgsEl.innerHTML = '';
+
+    // 渲染历史消息（稍微变暗表示是已有记录）
+    conv.messages.forEach(m => {
+      const div = document.createElement('div');
+      div.className = `msg msg-${m.role === 'user' ? 'user' : 'ai'} msg-history`;
+      div.textContent = m.content;
+      msgsEl.appendChild(div);
+    });
+
+    // 分隔线
+    const sep = document.createElement('div');
+    sep.className = 'msg-separator';
+    sep.textContent = '── 继续聊 ──';
+    msgsEl.appendChild(sep);
+
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+
+    const dateStr = new Date(conv.startedAt).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+    document.getElementById('chat-context-label').textContent = dateStr + ' 的对话';
+
+    document.getElementById('chat-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('chat-input').focus(), 350);
+  }
+
+  function closeChat() {
+    // 有实质对话才保存
+    if (currentSession && currentSession.messages.length >= 2) {
+      const convs = loadConvs();
+      convs.unshift(currentSession);
+      saveConvs(convs);
+      renderHistory();
+    }
+    currentSession = null;
+    document.getElementById('chat-overlay').classList.remove('open');
+  }
+
+  document.getElementById('chat-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+  });
+
+  function addMsg(role, text) {
+    const div = document.createElement('div');
+    div.className = `msg msg-${role}`;
+    div.textContent = text;
+    document.getElementById('chat-messages').appendChild(div);
+    const msgs = document.getElementById('chat-messages');
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
+
+  async function sendMsg() {
+    if (streaming) return;
+    const input = document.getElementById('chat-input');
+    const q = input.value.trim();
+    if (!q) return;
+
+    input.value = '';
+    streaming = true;
+    document.getElementById('chat-send').disabled = true;
+
+    addMsg('user', q);
+    const aiDiv = addMsg('ai', '…');
+    aiDiv.classList.add('msg-typing');
+    chatHistory.push({ role: 'user', content: q });
+
+    // 记录第一条用户消息作为预览
+    if (currentSession && !currentSession.preview) currentSession.preview = q;
+
+    try {
+      const res = await fetch('/api/mom-ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q, history: chatHistory.slice(-8) }),
+      });
+
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let answer = '';
+      let usageInfo = null;
+      aiDiv.classList.remove('msg-typing');
+      aiDiv.textContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        for (const line of dec.decode(value).split('\n')) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const msg = JSON.parse(line.slice(6));
+            if (msg.type === 'delta') {
+              answer += msg.text;
+              aiDiv.textContent = answer;
+              document.getElementById('chat-messages').scrollTop = 99999;
+            } else if (msg.type === 'usage' && msg.usage) {
+              usageInfo = msg.usage;
+            } else if (msg.type === 'error') {
+              aiDiv.textContent = `出错了：${msg.message}`;
+              aiDiv.style.color = '#c0392b';
+              if (msg.stack) console.error('[mom-ask]', msg.stack);
+            }
+          } catch {}
+        }
+      }
+
+      if (answer) {
+        chatHistory.push({ role: 'assistant', content: answer });
+        if (currentSession) {
+          currentSession.messages = chatHistory.slice();
+        }
+      }
+
+      if (usageInfo) {
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'msg-meta';
+        metaDiv.textContent = `↑${usageInfo.prompt_tokens || 0} ↓${usageInfo.completion_tokens || 0} tokens`;
+        document.getElementById('chat-messages').appendChild(metaDiv);
+      }
+    } catch(e) {
+      aiDiv.textContent = `出错了：${e.message}`;
+      aiDiv.style.color = '#c0392b';
+      aiDiv.classList.remove('msg-typing');
+    }
+
+    streaming = false;
+    document.getElementById('chat-send').disabled = false;
+    input.focus();
+  }
+
+  // ── 诊断面板 ─────────────────────────────────────────────────────────────
+
+  async function openDebug() {
+    const panel = document.getElementById('debug-panel');
+    const content = document.getElementById('debug-content');
+    panel.classList.add('open');
+    content.textContent = '正在检查…';
+    try {
+      const [health, log] = await Promise.all([
+        fetch('/api/mom-health').then(r => r.json()),
+        fetch('/api/mom-debug').then(r => r.json()),
+      ]);
+      const s = [];
+      s.push('── 模型可用性 ──');
+      s.push(`嵌入 bge-m3:          ${health.embed?.ok ? '✓' : '✗'} ${health.embed?.ms ?? '?'}ms${health.embed?.error ? '  ' + health.embed.error : ''}`);
+      s.push(`对话 DeepSeek-V4-Flash: ${health.chat?.ok ? '✓' : '✗'} ${health.chat?.ms ?? '?'}ms${health.chat?.error ? '  ' + health.chat.error : ''}`);
+      s.push('');
+      s.push('── 公开笔记 ──');
+      const pn = health.publicNotes || {};
+      s.push(`数量: ${pn.count ?? 0}${pn.error ? '  错误: ' + pn.error : ''}`);
+      if (pn.files?.length) pn.files.forEach(f => s.push('  • ' + f));
+      s.push('');
+      s.push('── 索引状态 ──');
+      const idx = health.momIndex || {};
+      s.push(`已建立: ${idx.created ? '是' : '否'}  chunks: ${idx.chunks ?? 0}${idx.error ? '  错误: ' + idx.error : ''}`);
+      s.push('');
+      s.push('── 最近问答 ──');
+      if (!log.length) {
+        s.push('暂无记录');
+      } else {
+        log.slice(0, 8).forEach(e => {
+          const usage = e.usage ? `↑${e.usage.prompt_tokens} ↓${e.usage.completion_tokens}` : '无token';
+          s.push(`${e.ok ? '✓' : '✗'} [${(e.time || '').slice(11, 19)}] ${e.q}`);
+          s.push(`   ${e.ms}ms | embed ${e.embedMs ?? '?'}ms | chat ${e.chatMs ?? '?'}ms | ${usage}${e.error ? '\n   ERR: ' + e.error : ''}`);
+        });
+      }
+      content.textContent = s.join('\n');
+    } catch(e) {
+      content.textContent = '获取诊断信息失败：' + e.message;
+    }
+  }
+
+  function closeDebug() {
+    document.getElementById('debug-panel').classList.remove('open');
+  }
+
+  // ── Service Worker ────────────────────────────────────────────────────────
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/mom/sw.js', { scope: '/mom/' }).catch(() => {});
+  }
+</script>
+</body>
+</html>

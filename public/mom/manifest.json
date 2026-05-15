@@ -1,0 +1,12 @@
+{
+  "name": "Zia 的小窗",
+  "short_name": "Zia",
+  "description": "随时了解 Zia 在做什么",
+  "start_url": "/mom",
+  "scope": "/mom",
+  "display": "standalone",
+  "background_color": "#faf7f4",
+  "theme_color": "#c4714a",
+  "lang": "zh-CN",
+  "icons": []
+}

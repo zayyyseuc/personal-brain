@@ -1,10 +1,11 @@
 const chokidar = require('chokidar');
 const path = require('path');
 const { indexFile, ensureIndex } = require('./indexer');
+const { indexFile: momIndexFile, ensureIndex: ensureMomIndex } = require('./mom-indexer');
 require('dotenv').config();
 
 function startWatcher() {
-  ensureIndex().then(() => {
+  Promise.all([ensureIndex(), ensureMomIndex()]).then(() => {
     const watcher = chokidar.watch(process.env.VAULT_PATH, {
       ignored: /(^|[\/\\])\../, // 忽略隐藏文件
       persistent: true,
@@ -16,12 +17,14 @@ function startWatcher() {
         if (filePath.endsWith('.md')) {
           console.log(`新文件: ${path.relative(process.env.VAULT_PATH, filePath)}`);
           indexFile(filePath).catch(console.error);
+          momIndexFile(filePath).catch(console.error);
         }
       })
       .on('change', filePath => {
         if (filePath.endsWith('.md')) {
           console.log(`文件更新: ${path.relative(process.env.VAULT_PATH, filePath)}`);
           indexFile(filePath).catch(console.error);
+          momIndexFile(filePath).catch(console.error);
         }
       });
 

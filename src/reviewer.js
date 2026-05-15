@@ -79,7 +79,7 @@ async function generateSummary(files) {
     .join('\n\n---\n\n');
 
   const completion = await client.chat.completions.create({
-    model: 'deepseek-ai/DeepSeek-V3.2',
+    model: 'deepseek-ai/DeepSeek-V4-Flash',
     messages: [
       {
         role: 'system',
@@ -93,8 +93,8 @@ async function generateSummary(files) {
     max_tokens: 200,
   });
 
+  const raw = completion.choices[0].message.content.trim().replace(/^```json?\n?|```$/g, '');
   try {
-    const raw = completion.choices[0].message.content.trim().replace(/^```json?\n?|```$/g, '');
     const parsed = JSON.parse(raw);
     return {
       summary:  parsed.summary  || '',
@@ -102,7 +102,18 @@ async function generateSummary(files) {
       question: parsed.question || '',
     };
   } catch {
-    return { summary: completion.choices[0].message.content.trim(), tags: [], question: '' };
+    // Malformed JSON fallback: extract tags array and question via regex
+    const tagsMatch    = raw.match(/"tags"\s*:\s*\[([^\]]+)\]/);
+    const questionMatch = raw.match(/"question"\s*:\s*"([^"]+)"/);
+    const summaryMatch = raw.match(/"summary"\s*:\s*"([^"]+)"/);
+    const tags = tagsMatch
+      ? tagsMatch[1].match(/"([^"]+)"/g)?.map(s => s.replace(/"/g, '')) ?? []
+      : [];
+    return {
+      summary:  summaryMatch ? summaryMatch[1] : raw,
+      tags,
+      question: questionMatch ? questionMatch[1] : '',
+    };
   }
 }
 
